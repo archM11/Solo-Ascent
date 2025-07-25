@@ -54,6 +54,16 @@
         .capture-result h2 { color: #00ff00; margin: 20px 0 10px; }
         .capture-result h2.failed { color: #ff4444; }
         .victory-rewards { background: #1a1a1a; border: 2px solid #00ffff; padding: 15px; margin: 20px 0; border-radius: 10px; }
+        .rarity-E { color: #ffffff; }
+        .rarity-D { color: #00ff00; }
+        .rarity-C { color: #0080ff; }
+        .rarity-B { color: #8000ff; }
+        .rarity-A { color: #ff8000; }
+        .rarity-S { color: #ff0080; text-shadow: 0 0 10px #ff0080; }
+        .item-description { color: #cccccc; font-size: 0.9em; margin: 5px 0; }
+        .item-stats { color: #00ffff; font-size: 0.9em; margin: 5px 0; }
+        .item-drops { background: #1a1a1a; border: 2px solid #00ff00; padding: 15px; margin: 10px 0; border-radius: 10px; }
+        .item-drop { background: #2a2a2a; padding: 8px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #00ff00; }
         .enemy { font-size: 4em; margin: 20px 0; }
         .turn-indicator { font-size: 1.2em; font-weight: bold; margin: 10px 0; }
         .turn-player { color: #00ffff; }
@@ -447,7 +457,7 @@
                 </div>
                 <div class="nav-col">
                     <button class="btn" onclick="showScreen('inventory')">🎒 Inventory</button>
-                    <button class="btn" onclick="showScreen('summoning')">🔮 Summon</button>
+                    <button class="btn" onclick="showScreen('summoning')">👥 Party</button>
                     <button class="btn" onclick="showScreen('music')">🎵 Music</button>
                 </div>
             </div>
@@ -515,10 +525,17 @@
                 </div>
                 <div id="combatActions">
                     <button class="btn" id="attackBtn" onclick="attack()">⚔️ ATTACK</button>
-                    <button class="btn" id="itemBtn" onclick="useItem()">🧪 ITEM</button>
+                    <button class="btn" id="itemBtn" onclick="showCombatItems()">🧪 ITEM</button>
                     <button class="btn" id="runBtn" onclick="runAway()">🏃 RUN</button>
                 </div>
             </div>
+        </div>
+
+        <!-- Combat Items Screen -->
+        <div id="combatItems" class="screen">
+            <button class="btn" onclick="showScreen('combat')">🔙 Back to Combat</button>
+            <div class="header"><h1>🧪 COMBAT ITEMS</h1></div>
+            <div id="combatItemGrid" class="grid grid-3"></div>
         </div>
 
         <!-- Boss Capture Screen -->
@@ -551,6 +568,11 @@
                     <h3>Rewards:</h3>
                     <p>⭐ XP: <span id="victoryXP">0</span></p>
                     <p>💰 Coins: <span id="victoryCoins">0</span></p>
+                </div>
+                
+                <div id="itemDropsSection" class="item-drops" style="display: none;">
+                    <h3>🎁 Item Drops:</h3>
+                    <div id="itemDropsList"></div>
                 </div>
                 
                 <button class="btn" id="captureCloseBtn" onclick="closeCaptureScreen()" style="display: none;">Continue</button>
@@ -676,13 +698,14 @@
         <!-- Summoning Screen -->
         <div id="summoning" class="screen">
             <button class="btn" onclick="showScreen('home')">🏠 Home</button>
-            <div class="header"><h1>🔮 BOSS SUMMONING</h1></div>
+            <div class="header"><h1>👥 PARTY MANAGEMENT</h1></div>
             
             <div class="card">
                 <h3>Captured Bosses</h3>
                 <div id="bossGrid" class="grid grid-2"></div>
                 <p style="text-align: center; color: #ffffff; margin-top: 15px;">
                     Capture bosses by defeating dungeon final bosses!<br>
+                    Add up to 3 bosses to your party - they'll tank damage and attack with you!<br>
                     Success rate: 5% + INT * 2%
                 </p>
             </div>
@@ -1236,7 +1259,93 @@
             }, 700);
         };
 
-        const useItem = () => showNotification('Items coming soon!', 'info');
+        const showCombatItems = () => {
+            if (!currentCombat || currentCombat.turn !== 'player') {
+                showNotification('Not your turn!', 'warning');
+                return;
+            }
+            
+            loadCombatItems();
+            showScreen('combatItems');
+        };
+
+        const loadCombatItems = () => {
+            const grid = document.getElementById('combatItemGrid');
+            grid.innerHTML = '';
+            
+            // Filter for combat-useful potions (heal and stat buffs)
+            const combatItems = currentUser.inventory.items.filter(item => 
+                item.category === 'potions' && 
+                (item.effect === 'heal' || 
+                 item.effect === 'buff_str' || 
+                 item.effect === 'buff_agi' || 
+                 item.effect === 'buff_vit' || 
+                 item.effect === 'buff_all')
+            );
+            
+            if (combatItems.length === 0) {
+                grid.innerHTML = '<div class="card"><h3>No combat items available</h3><p>Find potions in shops or dungeon drops!</p></div>';
+                return;
+            }
+            
+            combatItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const rarityClass = `rarity-${item.rarity || 'common'}`;
+                
+                let canUse = true;
+                let disabledReason = '';
+                
+                if (item.effect === 'heal' && currentUser.hp >= currentUser.maxHp) {
+                    canUse = false;
+                    disabledReason = 'HP is full';
+                }
+                
+                card.innerHTML = `
+                    <h4 class="${rarityClass}">${item.name}</h4>
+                    <p class="item-description">${item.description || 'No description'}</p>
+                    <p class="item-stats">Effect: ${getEffectDescription(item)}</p>
+                    <p>Rarity: <span class="${rarityClass}">${(item.rarity || 'common').charAt(0).toUpperCase() + (item.rarity || 'common').slice(1)}</span></p>
+                    ${!canUse ? `<p style="color: #ff4444;">${disabledReason}</p>` : ''}
+                    <button class="btn" onclick="useCombatItem('${item.id}')" ${!canUse ? 'disabled' : ''}>
+                        Use Item
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        };
+
+        const getEffectDescription = (item) => {
+            switch (item.effect) {
+                case 'heal': return `Restore ${item.value} HP`;
+                case 'buff_str': return `+${item.value} STR for ${Math.floor(item.duration/60000)}min`;
+                case 'buff_agi': return `+${item.value} AGI for ${Math.floor(item.duration/60000)}min`;
+                case 'buff_vit': return `+${item.value} VIT for ${Math.floor(item.duration/60000)}min`;
+                case 'buff_all': return `+${item.value} All Stats for ${Math.floor(item.duration/60000)}min`;
+                default: return 'Unknown effect';
+            }
+        };
+
+        const useCombatItem = async (itemId) => {
+            const item = currentUser.inventory.items.find(i => i.id === itemId);
+            if (!item) {
+                showNotification('Item not found!', 'error');
+                return;
+            }
+            
+            const result = await request(`/user/${currentUser.id}/inventory/use/${itemId}`, { method: 'POST' });
+            if (result.success) {
+                currentUser = result.user;
+                showNotification(`Used ${item.name}!`, 'success');
+                
+                // Go back to combat and end player turn
+                showScreen('combat');
+                updateCombat();
+                setTimeout(enemyTurn, 1000);
+            } else {
+                showNotification('Cannot use this item right now', 'warning');
+            }
+        };
         const runAway = () => { showScreen('dungeons'); currentCombat = null; };
 
         let captureResultData = null;
@@ -1247,6 +1356,29 @@
             // Set rewards
             document.getElementById('victoryXP').textContent = result.rewards.xp;
             document.getElementById('victoryCoins').textContent = result.rewards.coins;
+            
+            // Show item drops if any
+            const itemDropsSection = document.getElementById('itemDropsSection');
+            const itemDropsList = document.getElementById('itemDropsList');
+            
+            if (result.itemDrops && result.itemDrops.length > 0) {
+                itemDropsList.innerHTML = '';
+                result.itemDrops.forEach(item => {
+                    const rarityClass = `rarity-${item.rarity || 'common'}`;
+                    const dropDiv = document.createElement('div');
+                    dropDiv.className = 'item-drop';
+                    dropDiv.innerHTML = `
+                        <h4 class="${rarityClass}">📦 ${item.name}</h4>
+                        <p class="item-description">${item.description || 'No description'}</p>
+                        <p class="item-stats">${formatItemStats(item.stats)}</p>
+                        <p>Rarity: <span class="${rarityClass}">${(item.rarity || 'common').charAt(0).toUpperCase() + (item.rarity || 'common').slice(1)}</span></p>
+                    `;
+                    itemDropsList.appendChild(dropDiv);
+                });
+                itemDropsSection.style.display = 'block';
+            } else {
+                itemDropsSection.style.display = 'none';
+            }
             
             // Calculate capture chance
             const stats = calculateClientStats(currentUser);
@@ -1276,6 +1408,9 @@
             
             // Show result after animation completes
             setTimeout(() => {
+                // Hide capture circle
+                document.getElementById('captureCircle').style.display = 'none';
+                
                 const captureResult = document.getElementById('captureResult');
                 const captureResultText = document.getElementById('captureResultText');
                 const captureResultDesc = document.getElementById('captureResultDesc');
@@ -1331,6 +1466,18 @@
             filterItems('all');
         };
 
+        const formatItemStats = (stats) => {
+            if (!stats) return 'No stat bonuses';
+            const statNames = { str: 'STR', agi: 'AGI', vit: 'VIT', int: 'INT', per: 'PER' };
+            const statArray = [];
+            Object.entries(stats).forEach(([stat, value]) => {
+                if (value > 0) {
+                    statArray.push(`${statNames[stat] || stat.toUpperCase()}+${value}`);
+                }
+            });
+            return statArray.length > 0 ? statArray.join(' ') : 'No stat bonuses';
+        };
+
         const filterItems = (category) => {
             const grid = document.getElementById('itemGrid');
             grid.innerHTML = '';
@@ -1345,15 +1492,19 @@
                 
                 let actionButton = '';
                 if (item.category === 'potions') {
-                    actionButton = '<button class="btn" disabled style="opacity: 0.5;">Consumable</button>';
+                    actionButton = ''; // No button for potions in inventory
                 } else {
                     actionButton = `<button class="btn" onclick="equipItem('${item.id}')">Equip</button>`;
                 }
                 
+                const rarityClass = `rarity-${item.rarity || 'common'}`;
+                
                 card.innerHTML = `
-                    <h4>${item.name}</h4>
+                    <h4 class="${rarityClass}">${item.name}</h4>
+                    <p class="item-description">${item.description || 'No description'}</p>
                     <p>Category: ${item.category}</p>
-                    <p>Stats: STR+${item.stats?.str || 0} AGI+${item.stats?.agi || 0}</p>
+                    <p class="item-stats">${formatItemStats(item.stats)}</p>
+                    <p>Rarity: <span class="${rarityClass}">${(item.rarity || 'common').charAt(0).toUpperCase() + (item.rarity || 'common').slice(1)}</span></p>
                     ${actionButton}
                 `;
                 grid.appendChild(card);
@@ -1364,6 +1515,18 @@
             await request(`/user/${currentUser.id}/inventory/equip/${itemId}`, { method: 'POST' });
             currentUser = await request(`/user/${currentUser.id}`);
             loadInventory();
+        };
+
+        const useItem = async (itemId) => {
+            const result = await request(`/user/${currentUser.id}/inventory/use/${itemId}`, { method: 'POST' });
+            if (result.success) {
+                currentUser = result.user;
+                updateUI();
+                loadInventory();
+                showNotification('Item used successfully!', 'success');
+            } else {
+                showNotification('Cannot use this item right now', 'warning');
+            }
         };
 
         // Shop
@@ -1384,10 +1547,13 @@
                     const purchased = shopData.purchased.includes(item.id);
                     const card = document.createElement('div');
                     card.className = 'card';
+                    const rarityClass = `rarity-${item.rarity || 'common'}`;
                     card.innerHTML = `
-                        <h4>${item.name}</h4>
+                        <h4 class="${rarityClass}">${item.name}</h4>
+                        <p class="item-description">${item.description || 'No description'}</p>
                         <p>💰 ${item.price} coins</p>
-                        <p>Stats: STR+${item.stats?.str || 0} AGI+${item.stats?.agi || 0}</p>
+                        <p class="item-stats">${formatItemStats(item.stats)}</p>
+                        <p>Rarity: <span class="${rarityClass}">${(item.rarity || 'common').charAt(0).toUpperCase() + (item.rarity || 'common').slice(1)}</span></p>
                         <button class="btn" onclick="buyItem('${item.id}')" ${purchased || currentUser.coins < item.price ? 'disabled' : ''}>
                             ${purchased ? 'SOLD' : 'BUY'}
                         </button>
@@ -1688,48 +1854,23 @@
 
         let selectedBossId = null;
 
-        const sendBossOnMission = (bossId) => {
+        const addToParty = async (bossId) => {
             const boss = currentUser.capturedBosses.find(b => b.id === bossId);
-            if (boss && !boss.onMission) {
-                selectedBossId = bossId;
-                
-                // Generate expected rewards (same as server logic)
-                const expectedXP = Math.floor(Math.random() * 200) + 100;
-                const expectedCoins = Math.floor(Math.random() * 100) + 50;
-                
-                // Update modal content
-                document.getElementById('modalBossName').textContent = boss.name;
-                document.getElementById('modalExpectedXP').textContent = expectedXP;
-                document.getElementById('modalExpectedCoins').textContent = expectedCoins;
-                
-                // Show modal
-                document.getElementById('missionModal').style.display = 'flex';
-            }
-        };
-
-        const confirmMission = async () => {
-            if (selectedBossId) {
-                const boss = currentUser.capturedBosses.find(b => b.id === selectedBossId);
-                currentUser = await request(`/user/${currentUser.id}/boss/${selectedBossId}/mission`, { method: 'POST' });
+            if (boss && currentUser.party.length < 3) {
+                currentUser = await request(`/user/${currentUser.id}/boss/${bossId}/party/add`, { method: 'POST' });
                 updateUI();
                 updateBossGrid();
-                closeMissionModal();
-                showNotification(`${boss.name} sent on mission!`, 'success');
+                showNotification(`${boss.name} added to party!`, 'success');
             }
         };
 
-        const closeMissionModal = () => {
-            document.getElementById('missionModal').style.display = 'none';
-            selectedBossId = null;
-        };
-
-        const claimMissionReward = async (bossId) => {
-            const mission = currentUser.activeMissions.find(m => m.bossId === bossId);
-            currentUser = await request(`/user/${currentUser.id}/boss/${bossId}/claim`, { method: 'POST' });
-            updateUI();
-            updateBossGrid();
-            if (mission) {
-                showNotification(`Mission rewards claimed! +${mission.rewards.xp} XP, +${mission.rewards.coins} coins`, 'success');
+        const removeFromParty = async (bossId) => {
+            const boss = currentUser.capturedBosses.find(b => b.id === bossId);
+            if (boss) {
+                currentUser = await request(`/user/${currentUser.id}/boss/${bossId}/party/remove`, { method: 'POST' });
+                updateUI();
+                updateBossGrid();
+                showNotification(`${boss.name} removed from party!`, 'success');
             }
         };
 
@@ -1741,43 +1882,34 @@
                 const bossCard = document.createElement('div');
                 bossCard.className = 'card';
                 
-                let missionInfo = '';
-                if (boss.onMission) {
-                    const mission = currentUser.activeMissions.find(m => m.bossId === boss.id);
-                    if (mission) {
-                        const timeRemaining = Math.max(0, (mission.startTime + mission.duration) - Date.now());
-                        const minutes = Math.floor(timeRemaining / 60000);
-                        const seconds = Math.floor((timeRemaining % 60000) / 1000);
-                        
-                        if (timeRemaining > 0) {
-                            missionInfo = `
-                                <div style="background: #2a2a2a; padding: 10px; border-radius: 5px; margin: 10px 0;">
-                                    <p style="color: #00ffff; font-weight: bold;">⏰ Mission in Progress</p>
-                                    <p>Time Left: ${minutes}m ${seconds}s</p>
-                                    <p>🏆 XP: ${mission.rewards.xp}</p>
-                                    <p>💰 Coins: ${mission.rewards.coins}</p>
-                                </div>
-                            `;
-                        } else {
-                            missionInfo = `
-                                <div style="background: #1a4a1a; padding: 10px; border-radius: 5px; margin: 10px 0;">
-                                    <p style="color: #00ff00; font-weight: bold;">✅ Mission Complete!</p>
-                                    <p>🏆 XP: ${mission.rewards.xp}</p>
-                                    <p>💰 Coins: ${mission.rewards.coins}</p>
-                                    <button class="btn" onclick="claimMissionReward('${boss.id}')" style="margin-top: 10px;">Claim Rewards</button>
-                                </div>
-                            `;
-                        }
-                    }
+                const isInParty = currentUser.party.find(p => p.id === boss.id);
+                const rarityClass = `rarity-${boss.tier}`;
+                
+                let partyInfo = '';
+                if (isInParty) {
+                    const partyMember = currentUser.party.find(p => p.id === boss.id);
+                    partyInfo = `
+                        <div style="background: #1a4a1a; padding: 10px; border-radius: 5px; margin: 10px 0; border: 2px solid #00ffff;">
+                            <p style="color: #00ffff; font-weight: bold;">⚔️ In Party</p>
+                            <p>HP: ${partyMember.hp}/${partyMember.maxHp}</p>
+                            <p>Attack: ${partyMember.attack}</p>
+                            <p>Status: ${partyMember.isAlive ? '✅ Alive' : '💀 KO'}</p>
+                        </div>
+                    `;
                 }
                 
                 bossCard.innerHTML = `
-                    <h4>${boss.name}</h4>
-                    <p>Tier ${boss.tier}</p>
-                    ${missionInfo}
-                    <button class="btn" onclick="sendBossOnMission('${boss.id}')" ${boss.onMission ? 'disabled' : ''}>
-                        ${boss.onMission ? '⏰ On Mission' : '🚀 Send Mission'}
-                    </button>
+                    <h4 class="${rarityClass}">${boss.name}</h4>
+                    <p>Tier <span class="${rarityClass}">${boss.tier}</span></p>
+                    ${partyInfo}
+                    <div style="margin: 10px 0;">
+                        ${!isInParty && currentUser.party.length < 3 ? 
+                            `<button class="btn" onclick="addToParty('${boss.id}')" style="background: #00ffff; color: #000000;">➕ Add to Party</button>` :
+                            isInParty ? 
+                            `<button class="btn" onclick="removeFromParty('${boss.id}')" style="background: #ff4444; color: #ffffff;">➖ Remove from Party</button>` :
+                            `<button class="btn" disabled style="opacity: 0.5;">Party Full (3/3)</button>`
+                        }
+                    </div>
                 `;
                 bossGrid.appendChild(bossCard);
             });
