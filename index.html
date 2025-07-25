@@ -35,7 +35,24 @@
         .grid-4 { grid-template-columns: repeat(4, 1fr); }
         .card { background: #1a1a1a; border: 2px solid #2a2a2a; padding: 15px; border-radius: 10px; }
         .card:hover { border-color: #00ffff; }
-        .combat { text-align: center; background: #1a1a1a; border: 2px solid #00ffff; padding: 20px; border-radius: 10px; }
+        .combat { text-align: center; background: #1a1a1a; border: 2px solid #00ffff; padding: 20px; border-radius: 10px; position: relative; }
+        .damage-log { position: absolute; right: 0; top: 100%; transform: translateX(50%); z-index: 99; margin-top: 5px; }
+        .damage-log-text { background: #1a1a1a; border: 2px solid #00ffff; color: #00ffff; padding: 8px 12px; border-radius: 5px; font-size: 14px; white-space: nowrap; }
+        .damage-log-arrow { color: #00ffff; font-size: 18px; margin-left: 5px; }
+        .capture-container { text-align: center; max-width: 500px; margin: 0 auto; padding: 20px; }
+        .capture-header h1 { color: #ffd700; margin-bottom: 10px; }
+        .capture-animation { margin: 30px 0; }
+        .boss-icon { font-size: 80px; margin-bottom: 20px; }
+        .capture-circle { width: 200px; height: 200px; border: 3px solid #00ffff; border-radius: 50%; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .capture-text { color: #00ffff; font-size: 16px; margin-bottom: 10px; }
+        .capture-progress { width: 80%; height: 10px; background: #2a2a2a; border-radius: 5px; overflow: hidden; }
+        .capture-progress::after { content: ''; display: block; height: 100%; background: linear-gradient(90deg, #00ffff, #ffffff); width: 0%; animation: captureProgress 3s ease-in-out forwards; }
+        @keyframes captureProgress { 0% { width: 0%; } 100% { width: 100%; } }
+        .capture-controls { margin: 20px 0; }
+        .capture-go-btn { background: #00ffff; color: #000000; padding: 10px 30px; font-size: 18px; font-weight: bold; }
+        .capture-result h2 { color: #00ff00; margin: 20px 0 10px; }
+        .capture-result h2.failed { color: #ff4444; }
+        .victory-rewards { background: #1a1a1a; border: 2px solid #00ffff; padding: 15px; margin: 20px 0; border-radius: 10px; }
         .enemy { font-size: 4em; margin: 20px 0; }
         .turn-indicator { font-size: 1.2em; font-weight: bold; margin: 10px 0; }
         .turn-player { color: #00ffff; }
@@ -323,6 +340,8 @@
             <div class="player-status">
                 <p>Level <span id="playerLevel">1</span></p>
                 <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+                <p>HP: <span id="playerHp">100</span>/<span id="playerMaxHp">100</span></p>
+                <div class="hp-bar"><div class="hp-fill" id="hpFill"></div></div>
             </div>
         </div>
 
@@ -337,8 +356,13 @@
         <div id="combat" class="screen">
             <div class="combat">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                    <div><span id="playerNameCombat">Player</span><br>HP: <span id="playerHpCombat">100</span></div>
-                    <div><span id="enemyNameCombat">Enemy</span><br>HP: <span id="enemyHpCombat">100</span></div>
+                    <div><span id="playerNameCombat">Player</span><br>HP: <span id="playerHpCombat">0</span>/<span id="playerMaxHpCombat">0</span></div>
+                    <div style="position: relative;">
+                        <span id="enemyNameCombat">Enemy</span><br>HP: <span id="enemyHpCombat">0</span>/<span id="enemyMaxHpCombat">0</span>
+                        <div id="damageLog" class="damage-log" style="display: none;">
+                            <div class="damage-log-text">-<span id="damageLogAmount">90</span></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="enemy" id="enemyIcon">🧙‍♂️</div>
                 <div class="turn-indicator" id="turnIndicator">Your Turn</div>
@@ -352,6 +376,42 @@
                     <button class="btn" onclick="useItem()">🧪 ITEM</button>
                     <button class="btn" onclick="runAway()">🏃 RUN</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Boss Capture Screen -->
+        <div id="capture" class="screen">
+            <div class="capture-container">
+                <div class="capture-header">
+                    <h1>🏆 VICTORY!</h1>
+                    <p>You defeated the boss!</p>
+                </div>
+                
+                <div class="capture-animation">
+                    <div class="boss-icon" id="captureBossIcon">👹</div>
+                    <div class="capture-circle" id="captureCircle" style="display: none;">
+                        <div class="capture-text" id="captureText">Attempting Capture...</div>
+                        <div class="capture-progress" id="captureProgress"></div>
+                    </div>
+                </div>
+                
+                <div class="capture-controls" id="captureControls">
+                    <p>Capture chance: <span id="captureChance">85%</span></p>
+                    <button class="btn capture-go-btn" onclick="attemptCapture()">GO</button>
+                </div>
+                
+                <div class="capture-result" id="captureResult" style="display: none;">
+                    <h2 id="captureResultText">Success!</h2>
+                    <p id="captureResultDesc">Boss captured!</p>
+                </div>
+                
+                <div class="victory-rewards">
+                    <h3>Rewards:</h3>
+                    <p>⭐ XP: <span id="victoryXP">0</span></p>
+                    <p>💰 Coins: <span id="victoryCoins">0</span></p>
+                </div>
+                
+                <button class="btn" id="captureCloseBtn" onclick="closeCaptureScreen()" style="display: none;">Continue</button>
             </div>
         </div>
 
@@ -748,8 +808,10 @@
             
             document.getElementById('playerNameCombat').textContent = currentUser.nickname;
             document.getElementById('playerHpCombat').textContent = currentUser.hp;
+            document.getElementById('playerMaxHpCombat').textContent = currentUser.maxHp || 100;
             document.getElementById('enemyNameCombat').textContent = currentCombat.enemy.name;
             document.getElementById('enemyHpCombat').textContent = currentCombat.enemy.hp;
+            document.getElementById('enemyMaxHpCombat').textContent = currentCombat.enemy.maxHp;
             
             const isPlayerTurn = currentCombat.turn === 'player';
             document.getElementById('turnIndicator').textContent = isPlayerTurn ? 'Your Turn' : 'Enemy Turn';
@@ -773,15 +835,33 @@
         const confirmWorkout = async () => {
             const result = await request(`/user/${currentUser.id}/combat/confirm-workout`, { method: 'POST' });
             
+            if (result.showingDamage) {
+                showDamageLog(result.damageDealt);
+                currentCombat = result;
+                updateCombat();
+                
+                setTimeout(() => {
+                    hideDamageLog();
+                    proceedAfterDamage(result);
+                }, 500);
+                return;
+            }
+            
+            proceedAfterDamage(result);
+        };
+
+        const showDamageLog = (damage) => {
+            document.getElementById('damageLogAmount').textContent = damage;
+            document.getElementById('damageLog').style.display = 'flex';
+        };
+
+        const hideDamageLog = () => {
+            document.getElementById('damageLog').style.display = 'none';
+        };
+
+        const proceedAfterDamage = async (result) => {
             if (result.victory) {
-                let message = `🎉 Victory! Gained ${result.rewards.xp} XP and ${result.rewards.coins} coins!`;
-                if (result.captured) {
-                    message += `\n🔮 Boss captured: ${result.boss.name}!`;
-                }
-                alert(message);
-                currentUser = await request(`/user/${currentUser.id}`);
-                updateBossGrid();
-                showScreen('dungeons');
+                showCaptureScreen(result);
                 return;
             }
             
@@ -791,6 +871,20 @@
                 if (currentCombat.turn === 'enemy') {
                     setTimeout(enemyTurn, 2000);
                 }
+                return;
+            }
+            
+            if (result.enemyDefeated) {
+                // Disable attack button during enemy spawn delay
+                document.getElementById('attackBtn').disabled = true;
+                
+                setTimeout(async () => {
+                    const nextEnemy = await request(`/user/${currentUser.id}/combat/next-enemy`, { method: 'POST' });
+                    if (nextEnemy.nextEnemy) {
+                        currentCombat = nextEnemy.session;
+                        updateCombat();
+                    }
+                }, 600);
                 return;
             }
             
@@ -824,6 +918,78 @@
 
         const useItem = () => alert('Items coming soon!');
         const runAway = () => { showScreen('dungeons'); currentCombat = null; };
+
+        let captureResultData = null;
+
+        const showCaptureScreen = (result) => {
+            captureResultData = result;
+            
+            // Set rewards
+            document.getElementById('victoryXP').textContent = result.rewards.xp;
+            document.getElementById('victoryCoins').textContent = result.rewards.coins;
+            
+            // Calculate capture chance
+            const stats = calculateClientStats(currentUser);
+            const captureRate = Math.min(95, 5 + stats.int * 2);
+            document.getElementById('captureChance').textContent = `${captureRate}%`;
+            
+            // Show the capture screen
+            showScreen('capture');
+            
+            // Reset UI state
+            document.getElementById('captureCircle').style.display = 'none';
+            document.getElementById('captureResult').style.display = 'none';
+            document.getElementById('captureCloseBtn').style.display = 'none';
+            document.getElementById('captureControls').style.display = 'block';
+        };
+
+        const attemptCapture = () => {
+            // Hide controls and show capture circle
+            document.getElementById('captureControls').style.display = 'none';
+            document.getElementById('captureCircle').style.display = 'flex';
+            
+            // Reset progress bar animation
+            const progressBar = document.getElementById('captureProgress');
+            progressBar.style.animation = 'none';
+            progressBar.offsetHeight; // Trigger reflow
+            progressBar.style.animation = null;
+            
+            // Show result after animation completes
+            setTimeout(() => {
+                const captureResult = document.getElementById('captureResult');
+                const captureResultText = document.getElementById('captureResultText');
+                const captureResultDesc = document.getElementById('captureResultDesc');
+                const captureCloseBtn = document.getElementById('captureCloseBtn');
+                
+                if (captureResultData.captured) {
+                    captureResultText.textContent = '🔮 SUCCESS!';
+                    captureResultText.className = '';
+                    captureResultDesc.textContent = `Boss captured: ${captureResultData.boss.name}!`;
+                } else {
+                    captureResultText.textContent = '❌ FAILED!';
+                    captureResultText.className = 'failed';
+                    captureResultDesc.textContent = 'The boss escaped...';
+                }
+                
+                captureResult.style.display = 'block';
+                captureCloseBtn.style.display = 'block';
+            }, 3000);
+        };
+
+        const calculateClientStats = (user) => {
+            let totalStats = { str: user.stats.str, agi: user.stats.agi, vit: user.stats.vit, int: user.stats.int, per: user.stats.per };
+            const equipped = user.inventory.equipped;
+            [equipped.weapon, ...equipped.armor, ...equipped.accessories].forEach(item => {
+                if (item) Object.keys(item.stats || {}).forEach(stat => totalStats[stat] += item.stats[stat]);
+            });
+            return totalStats;
+        };
+
+        const closeCaptureScreen = async () => {
+            currentUser = await request(`/user/${currentUser.id}`);
+            updateBossGrid();
+            showScreen('dungeons');
+        };
 
         // Inventory
         const loadInventory = () => {

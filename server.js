@@ -85,11 +85,12 @@ const createEnemy = (tier, enemyIndex) => {
   const config = dungeonTiers[tier];
   const isBoss = enemyIndex === 3;
   const name = isBoss ? config.boss : config.mobs[enemyIndex];
-  const baseHp = 50 + (tier.charCodeAt(0) - 69) * 25;
-  const baseAttack = 10 + (tier.charCodeAt(0) - 69) * 5;
+  const tierMultiplier = Math.abs(tier.charCodeAt(0) - 69);
+  const baseHp = 50 + tierMultiplier * 25;
+  const baseAttack = 10 + tierMultiplier * 5;
   const hp = isBoss ? Math.floor(baseHp * 1.5) : baseHp;
   const attack = isBoss ? Math.floor(baseAttack * 1.3) : baseAttack;
-  const enemy = { name, hp, maxHp: hp, attack, agility: 5 + (tier.charCodeAt(0) - 69) * 2 };
+  const enemy = { name, hp, maxHp: hp, attack, agility: 5 + tierMultiplier * 2 };
   console.log('Created enemy:', enemy, 'tier:', tier, 'index:', enemyIndex);
   return enemy;
 };
@@ -194,10 +195,14 @@ app.post('/api/user/:id/combat/confirm-workout', (req, res) => {
     const stats = calculateStats(user);
     const damage = Math.floor(Math.random() * 20) + stats.str * 5;
     session.enemy.hp -= damage;
+    if (session.enemy.hp < 0) session.enemy.hp = 0;
     session.awaitingWorkout = false;
     session.workoutPrompt = null;
+    session.damageDealt = damage;
+    session.showingDamage = true;
     
     if (session.enemy.hp <= 0) {
+      session.enemyDefeated = true;
       session.enemyIndex++;
       
       if (session.enemyIndex >= 4 || session.summoned) {
@@ -272,11 +277,8 @@ app.post('/api/user/:id/combat/confirm-workout', (req, res) => {
           });
         }
       } else {
-        // Spawn next enemy
-        const newEnemy = createEnemy(session.tier, session.enemyIndex);
-        session.enemy = newEnemy;
-        session.turn = 'player';
-        return res.json({ nextEnemy: true, session });
+        // Don't spawn next enemy immediately - let client handle timing
+        return res.json(session);
       }
     }
     
@@ -308,6 +310,20 @@ app.post('/api/user/:id/combat/cancel', (req, res) => {
   if (session) {
     session.awaitingWorkout = false;
     session.workoutPrompt = null;
+  }
+  res.json(session);
+});
+
+app.post('/api/user/:id/combat/next-enemy', (req, res) => {
+  const session = combatSessions[req.params.id];
+  if (session && session.enemyDefeated) {
+    const newEnemy = createEnemy(session.tier, session.enemyIndex);
+    session.enemy = newEnemy;
+    session.turn = 'player';
+    session.enemyDefeated = false;
+    session.showingDamage = false;
+    session.damageDealt = null;
+    return res.json({ nextEnemy: true, session });
   }
   res.json(session);
 });
