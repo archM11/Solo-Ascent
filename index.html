@@ -36,8 +36,9 @@
         .card { background: #1a1a1a; border: 2px solid #2a2a2a; padding: 15px; border-radius: 10px; }
         .card:hover { border-color: #00ffff; }
         .combat { text-align: center; background: #1a1a1a; border: 2px solid #00ffff; padding: 20px; border-radius: 10px; position: relative; }
-        .damage-log { position: absolute; right: 0; top: 100%; transform: translateX(50%); z-index: 99; margin-top: 5px; }
-        .damage-log-text { background: #1a1a1a; border: 2px solid #00ffff; color: #00ffff; padding: 8px 12px; border-radius: 5px; font-size: 14px; white-space: nowrap; }
+        .damage-log { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); z-index: 999; margin-top: 5px; }
+        .player-damage-log { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); z-index: 999; margin-top: 5px; }
+        .damage-log-text { background: #ff4444; border: 2px solid #ffffff; color: #ffffff; padding: 10px 15px; border-radius: 5px; font-size: 16px; font-weight: bold; white-space: nowrap; box-shadow: 0 0 10px rgba(255,68,68,0.8); }
         .damage-log-arrow { color: #00ffff; font-size: 18px; margin-left: 5px; }
         .capture-container { text-align: center; max-width: 500px; margin: 0 auto; padding: 20px; }
         .capture-header h1 { color: #ffd700; margin-bottom: 10px; }
@@ -231,6 +232,142 @@
             align-items: stretch;
         }
         
+        /* Mission Confirmation Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: #1a1a1a;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .modal-title {
+            color: #00ffff;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        
+        .mission-info {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .mission-info h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .mission-details p {
+            margin: 10px 0;
+            color: #ffffff;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+        
+        .modal-btn {
+            background: linear-gradient(45deg, #2a2a2a, #1a1a1a);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 12px 25px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        .modal-btn:hover {
+            box-shadow: 0 0 15px #00ffff;
+            transform: translateY(-2px);
+        }
+        
+        .modal-btn.confirm {
+            background: linear-gradient(45deg, #00ffff, #ffffff);
+            color: #000000;
+            font-weight: bold;
+        }
+        
+        .modal-btn.cancel {
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+            border-color: #ff4444;
+            color: #ffffff;
+        }
+        
+        /* In-Game Notification System */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+        
+        .notification {
+            background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            transform: translateX(350px);
+            transition: all 0.3s ease-in-out;
+            pointer-events: auto;
+            min-width: 300px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        
+        .notification.error {
+            border-color: #ff4444;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+        }
+        
+        .notification.warning {
+            border-color: #ffaa00;
+            box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
+        }
+        
+        .notification-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        
+        .notification-text {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
         .settings-tasks {
             flex: 1;
             display: flex;
@@ -356,7 +493,12 @@
         <div id="combat" class="screen">
             <div class="combat">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                    <div><span id="playerNameCombat">Player</span><br>HP: <span id="playerHpCombat">0</span>/<span id="playerMaxHpCombat">0</span></div>
+                    <div style="position: relative;">
+                        <span id="playerNameCombat">Player</span><br>HP: <span id="playerHpCombat">0</span>/<span id="playerMaxHpCombat">0</span>
+                        <div id="playerDamageLog" class="player-damage-log" style="display: none;">
+                            <div class="damage-log-text">-<span id="playerDamageLogAmount">90</span></div>
+                        </div>
+                    </div>
                     <div style="position: relative;">
                         <span id="enemyNameCombat">Enemy</span><br>HP: <span id="enemyHpCombat">0</span>/<span id="enemyMaxHpCombat">0</span>
                         <div id="damageLog" class="damage-log" style="display: none;">
@@ -373,8 +515,8 @@
                 </div>
                 <div id="combatActions">
                     <button class="btn" id="attackBtn" onclick="attack()">⚔️ ATTACK</button>
-                    <button class="btn" onclick="useItem()">🧪 ITEM</button>
-                    <button class="btn" onclick="runAway()">🏃 RUN</button>
+                    <button class="btn" id="itemBtn" onclick="useItem()">🧪 ITEM</button>
+                    <button class="btn" id="runBtn" onclick="runAway()">🏃 RUN</button>
                 </div>
             </div>
         </div>
@@ -621,6 +763,35 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Mission Confirmation Modal -->
+        <div id="missionModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-title">🚀 Send Boss on Mission</div>
+                
+                <div class="mission-info">
+                    <h3 id="modalBossName">Boss Name</h3>
+                    <div class="mission-details">
+                        <p><strong>Mission Duration:</strong> 5 seconds</p>
+                        <p><strong>Expected Rewards:</strong></p>
+                        <p>🏆 XP: <span id="modalExpectedXP">150</span></p>
+                        <p>💰 Coins: <span id="modalExpectedCoins">75</span></p>
+                    </div>
+                </div>
+                
+                <p style="color: #ffffff; margin-bottom: 20px;">
+                    Are you sure you want to send this boss on a mission?
+                </p>
+                
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel" onclick="closeMissionModal()">Cancel</button>
+                    <button class="modal-btn confirm" onclick="confirmMission()">Send Mission</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- In-Game Notification Container -->
+        <div id="notificationContainer" class="notification-container"></div>
     </div>
 
     <script>
@@ -635,6 +806,42 @@
 
         // Utility functions
         const API_BASE = 'http://localhost:3000/api';
+        
+        // In-Game Notification System
+        const showNotification = (message, type = 'info', duration = 3000) => {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            const icons = {
+                info: '💙',
+                success: '✅',
+                error: '❌',
+                warning: '⚠️'
+            };
+            
+            notification.innerHTML = `
+                <span class="notification-icon">${icons[type] || icons.info}</span>
+                <span class="notification-text">${message}</span>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Auto remove
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, duration);
+        };
         
         const request = async (url, options = {}) => {
             const response = await fetch(`${API_BASE}${url}`, {
@@ -659,7 +866,7 @@
         // Authentication
         const login = async () => {
             const nickname = document.getElementById('nickname').value.trim();
-            if (!nickname) return alert('Please enter a nickname');
+            if (!nickname) return showNotification('Please enter a nickname', 'warning');
             
             currentUser = await request('/login', {
                 method: 'POST',
@@ -749,7 +956,7 @@
         const claimRewards = async () => {
             currentUser = await request(`/user/${currentUser.id}/tasks/claim`, { method: 'POST' });
             updateUI();
-            alert('🎉 Claimed 100 XP and 50 coins!');
+            showNotification('Claimed 100 XP and 50 coins!', 'success');
         };
 
         const assignStat = async (stat) => {
@@ -798,7 +1005,7 @@
             updateCombat();
             
             if (currentCombat.turn === 'enemy') {
-                setTimeout(enemyTurn, 1500);
+                setTimeout(enemyTurn, 700);
             }
         };
 
@@ -818,6 +1025,8 @@
             document.getElementById('turnIndicator').className = `turn-indicator ${isPlayerTurn ? 'turn-player' : 'turn-enemy'}`;
             
             document.getElementById('attackBtn').disabled = !isPlayerTurn || currentCombat.awaitingWorkout;
+            document.getElementById('itemBtn').disabled = !isPlayerTurn || currentCombat.awaitingWorkout;
+            document.getElementById('runBtn').disabled = !isPlayerTurn || currentCombat.awaitingWorkout;
             
             if (currentCombat.awaitingWorkout) {
                 document.getElementById('workoutPrompt').style.display = 'block';
@@ -828,22 +1037,80 @@
         };
 
         const attack = async () => {
+            // Immediately disable all combat buttons to prevent flash
+            document.getElementById('attackBtn').disabled = true;
+            document.getElementById('itemBtn').disabled = true;
+            document.getElementById('runBtn').disabled = true;
+            
             currentCombat = await request(`/user/${currentUser.id}/combat/attack`, { method: 'POST' });
             updateCombat();
         };
 
         const confirmWorkout = async () => {
+            // Immediately disable all combat buttons to prevent flash
+            document.getElementById('attackBtn').disabled = true;
+            document.getElementById('itemBtn').disabled = true;
+            document.getElementById('runBtn').disabled = true;
+            
             const result = await request(`/user/${currentUser.id}/combat/confirm-workout`, { method: 'POST' });
             
+            console.log('Confirm workout result:', result);
+            
+            // Handle boss victory that doesn't have showingDamage flag
+            if (result.victory && !result.showingDamage) {
+                console.log('Boss defeated without damage phase, creating damage sequence...');
+                
+                // Calculate damage dealt (enemy's remaining HP before defeat)
+                let damageDealt = result.damageDealt;
+                if (!damageDealt && currentCombat && currentCombat.enemy) {
+                    damageDealt = currentCombat.enemy.hp; // This was the remaining HP before the final blow
+                }
+                
+                // Set enemy HP to 0 for visual display
+                if (currentCombat && currentCombat.enemy) {
+                    currentCombat.enemy.hp = 0;
+                }
+                
+                // Create a damage sequence for the boss defeat
+                showDamageLog(damageDealt || 100); // fallback to 100 if no damage available
+                updateCombat();
+                
+                // Ensure buttons stay disabled during damage sequence
+                document.getElementById('attackBtn').disabled = true;
+                document.getElementById('itemBtn').disabled = true;
+                document.getElementById('runBtn').disabled = true;
+                
+                // Keep damage log visible during entire delay (900ms)
+                setTimeout(() => {
+                    hideDamageLog();
+                    console.log('Boss delay complete, showing capture screen');
+                    showCaptureScreen(result);
+                }, 900);
+                return;
+            }
+            
             if (result.showingDamage) {
+                console.log('Showing damage log with damage:', result.damageDealt);
                 showDamageLog(result.damageDealt);
                 currentCombat = result;
                 updateCombat();
                 
-                setTimeout(() => {
-                    hideDamageLog();
+                // Ensure buttons stay disabled during damage sequence
+                document.getElementById('attackBtn').disabled = true;
+                document.getElementById('itemBtn').disabled = true;
+                document.getElementById('runBtn').disabled = true;
+                
+                // Don't hide damage log here - let the next action hide it
+                // Check if this was a boss victory after showing damage
+                if (result.victory) {
+                    setTimeout(() => {
+                        hideDamageLog();
+                        console.log('Boss delay complete, showing capture screen');
+                        showCaptureScreen(result);
+                    }, 900);
+                } else {
                     proceedAfterDamage(result);
-                }, 500);
+                }
                 return;
             }
             
@@ -851,17 +1118,39 @@
         };
 
         const showDamageLog = (damage) => {
+            console.log('showDamageLog called with damage:', damage);
             document.getElementById('damageLogAmount').textContent = damage;
             document.getElementById('damageLog').style.display = 'flex';
+            console.log('Damage log display set to flex');
         };
 
         const hideDamageLog = () => {
             document.getElementById('damageLog').style.display = 'none';
         };
 
+        const showPlayerDamageLog = (damage) => {
+            console.log('showPlayerDamageLog called with damage:', damage);
+            document.getElementById('playerDamageLogAmount').textContent = damage;
+            document.getElementById('playerDamageLog').style.display = 'flex';
+            console.log('Player damage log display set to flex');
+        };
+
+        const hidePlayerDamageLog = () => {
+            document.getElementById('playerDamageLog').style.display = 'none';
+        };
+
         const proceedAfterDamage = async (result) => {
             if (result.victory) {
-                showCaptureScreen(result);
+                console.log('Boss victory detected, starting delay...');
+                // Disable all combat buttons during boss defeat delay
+                document.getElementById('attackBtn').disabled = true;
+                document.getElementById('itemBtn').disabled = true;
+                document.getElementById('runBtn').disabled = true;
+                
+                setTimeout(() => {
+                    console.log('Boss delay complete, showing capture screen');
+                    showCaptureScreen(result);
+                }, 900);
                 return;
             }
             
@@ -869,22 +1158,30 @@
                 currentCombat = result.session;
                 updateCombat();
                 if (currentCombat.turn === 'enemy') {
-                    setTimeout(enemyTurn, 2000);
+                    setTimeout(() => {
+                        hideDamageLog();
+                        enemyTurn();
+                    }, 700);
+                } else {
+                    hideDamageLog();
                 }
                 return;
             }
             
             if (result.enemyDefeated) {
-                // Disable attack button during enemy spawn delay
+                // Disable all combat buttons during enemy spawn delay
                 document.getElementById('attackBtn').disabled = true;
+                document.getElementById('itemBtn').disabled = true;
+                document.getElementById('runBtn').disabled = true;
                 
                 setTimeout(async () => {
+                    hideDamageLog();
                     const nextEnemy = await request(`/user/${currentUser.id}/combat/next-enemy`, { method: 'POST' });
                     if (nextEnemy.nextEnemy) {
                         currentCombat = nextEnemy.session;
                         updateCombat();
                     }
-                }, 600);
+                }, 1000);
                 return;
             }
             
@@ -892,7 +1189,12 @@
             updateCombat();
             
             if (currentCombat.turn === 'enemy') {
-                setTimeout(enemyTurn, 2000);
+                setTimeout(() => {
+                    hideDamageLog();
+                    enemyTurn();
+                }, 700);
+            } else {
+                hideDamageLog();
             }
         };
 
@@ -905,18 +1207,36 @@
             const result = await request(`/user/${currentUser.id}/combat/enemy-turn`, { method: 'POST' });
             
             if (result.defeat) {
-                alert('💀 Defeat! You have been slain!');
-                currentUser = await request(`/user/${currentUser.id}`);
-                showScreen('home');
+                // Show damage even on defeat
+                if (result.playerDamage) {
+                    showPlayerDamageLog(result.playerDamage);
+                }
+                setTimeout(async () => {
+                    hidePlayerDamageLog();
+                    showNotification('Defeat! You have been slain!', 'error');
+                    currentUser = await request(`/user/${currentUser.id}`);
+                    showScreen('home');
+                }, 800);
                 return;
             }
             
             currentCombat = result;
             currentUser = await request(`/user/${currentUser.id}`);
+            
+            // Show player damage if available
+            if (result.playerDamage) {
+                showPlayerDamageLog(result.playerDamage);
+            }
+            
             updateCombat();
+            
+            // Hide player damage log after delay and enable buttons for player turn
+            setTimeout(() => {
+                hidePlayerDamageLog();
+            }, 700);
         };
 
-        const useItem = () => alert('Items coming soon!');
+        const useItem = () => showNotification('Items coming soon!', 'info');
         const runAway = () => { showScreen('dungeons'); currentCombat = null; };
 
         let captureResultData = null;
@@ -1022,11 +1342,19 @@
             filteredItems.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'card';
+                
+                let actionButton = '';
+                if (item.category === 'potions') {
+                    actionButton = '<button class="btn" disabled style="opacity: 0.5;">Consumable</button>';
+                } else {
+                    actionButton = `<button class="btn" onclick="equipItem('${item.id}')">Equip</button>`;
+                }
+                
                 card.innerHTML = `
                     <h4>${item.name}</h4>
                     <p>Category: ${item.category}</p>
                     <p>Stats: STR+${item.stats?.str || 0} AGI+${item.stats?.agi || 0}</p>
-                    <button class="btn" onclick="equipItem('${item.id}')">Equip</button>
+                    ${actionButton}
                 `;
                 grid.appendChild(card);
             });
@@ -1230,7 +1558,7 @@
         };
 
         const removeFriend = async () => {
-            if (currentUser.friends.length === 0) return alert('No friends to remove');
+            if (currentUser.friends.length === 0) return showNotification('No friends to remove', 'warning');
             const friendName = prompt(`Enter friend name to remove:\n${currentUser.friends.join(', ')}`);
             if (friendName && currentUser.friends.includes(friendName)) {
                 await request(`/user/${currentUser.id}/friends/remove`, {
@@ -1295,7 +1623,7 @@
         };
 
         const customizeSplit = () => {
-            alert('Custom workout split editor coming soon!');
+            showNotification('Custom workout split editor coming soon!', 'info');
         };
 
         const resetProgress = () => {
@@ -1326,9 +1654,9 @@
                     reader.onload = (e) => {
                         try {
                             const data = JSON.parse(e.target.result);
-                            alert('Import feature coming soon!');
+                            showNotification('Import feature coming soon!', 'info');
                         } catch (err) {
-                            alert('Invalid save file!');
+                            showNotification('Invalid save file!', 'error');
                         }
                     };
                     reader.readAsText(file);
@@ -1338,7 +1666,7 @@
         };
 
         const createWorkoutSplit = () => {
-            alert('Workout split creation coming soon!');
+            showNotification('Workout split creation coming soon!', 'info');
         };
 
         const changeVolume = () => {
@@ -1358,11 +1686,51 @@
             updateBossGrid();
         };
 
-        const sendBossOnMission = async (bossId) => {
-            currentUser = await request(`/user/${currentUser.id}/boss/${bossId}/mission`, { method: 'POST' });
+        let selectedBossId = null;
+
+        const sendBossOnMission = (bossId) => {
+            const boss = currentUser.capturedBosses.find(b => b.id === bossId);
+            if (boss && !boss.onMission) {
+                selectedBossId = bossId;
+                
+                // Generate expected rewards (same as server logic)
+                const expectedXP = Math.floor(Math.random() * 200) + 100;
+                const expectedCoins = Math.floor(Math.random() * 100) + 50;
+                
+                // Update modal content
+                document.getElementById('modalBossName').textContent = boss.name;
+                document.getElementById('modalExpectedXP').textContent = expectedXP;
+                document.getElementById('modalExpectedCoins').textContent = expectedCoins;
+                
+                // Show modal
+                document.getElementById('missionModal').style.display = 'flex';
+            }
+        };
+
+        const confirmMission = async () => {
+            if (selectedBossId) {
+                const boss = currentUser.capturedBosses.find(b => b.id === selectedBossId);
+                currentUser = await request(`/user/${currentUser.id}/boss/${selectedBossId}/mission`, { method: 'POST' });
+                updateUI();
+                updateBossGrid();
+                closeMissionModal();
+                showNotification(`${boss.name} sent on mission!`, 'success');
+            }
+        };
+
+        const closeMissionModal = () => {
+            document.getElementById('missionModal').style.display = 'none';
+            selectedBossId = null;
+        };
+
+        const claimMissionReward = async (bossId) => {
+            const mission = currentUser.activeMissions.find(m => m.bossId === bossId);
+            currentUser = await request(`/user/${currentUser.id}/boss/${bossId}/claim`, { method: 'POST' });
             updateUI();
             updateBossGrid();
-            alert('🚀 Boss sent on mission!');
+            if (mission) {
+                showNotification(`Mission rewards claimed! +${mission.rewards.xp} XP, +${mission.rewards.coins} coins`, 'success');
+            }
         };
 
         const updateBossGrid = () => {
@@ -1372,9 +1740,41 @@
             currentUser.capturedBosses.forEach(boss => {
                 const bossCard = document.createElement('div');
                 bossCard.className = 'card';
+                
+                let missionInfo = '';
+                if (boss.onMission) {
+                    const mission = currentUser.activeMissions.find(m => m.bossId === boss.id);
+                    if (mission) {
+                        const timeRemaining = Math.max(0, (mission.startTime + mission.duration) - Date.now());
+                        const minutes = Math.floor(timeRemaining / 60000);
+                        const seconds = Math.floor((timeRemaining % 60000) / 1000);
+                        
+                        if (timeRemaining > 0) {
+                            missionInfo = `
+                                <div style="background: #2a2a2a; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                                    <p style="color: #00ffff; font-weight: bold;">⏰ Mission in Progress</p>
+                                    <p>Time Left: ${minutes}m ${seconds}s</p>
+                                    <p>🏆 XP: ${mission.rewards.xp}</p>
+                                    <p>💰 Coins: ${mission.rewards.coins}</p>
+                                </div>
+                            `;
+                        } else {
+                            missionInfo = `
+                                <div style="background: #1a4a1a; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                                    <p style="color: #00ff00; font-weight: bold;">✅ Mission Complete!</p>
+                                    <p>🏆 XP: ${mission.rewards.xp}</p>
+                                    <p>💰 Coins: ${mission.rewards.coins}</p>
+                                    <button class="btn" onclick="claimMissionReward('${boss.id}')" style="margin-top: 10px;">Claim Rewards</button>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+                
                 bossCard.innerHTML = `
                     <h4>${boss.name}</h4>
                     <p>Tier ${boss.tier}</p>
+                    ${missionInfo}
                     <button class="btn" onclick="sendBossOnMission('${boss.id}')" ${boss.onMission ? 'disabled' : ''}>
                         ${boss.onMission ? '⏰ On Mission' : '🚀 Send Mission'}
                     </button>
@@ -1391,8 +1791,18 @@
                 if (document.getElementById('settings').classList.contains('active')) {
                     updateSettingsTasks();
                 }
+                if (document.getElementById('summoning').classList.contains('active')) {
+                    updateBossGrid();
+                }
             }
         }, 30000);
+
+        // Update boss grid timers more frequently
+        setInterval(() => {
+            if (currentUser && document.getElementById('summoning').classList.contains('active')) {
+                updateBossGrid();
+            }
+        }, 1000);
     </script>
 </body>
 </html>

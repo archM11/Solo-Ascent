@@ -253,7 +253,7 @@ app.post('/api/user/:id/combat/confirm-workout', (req, res) => {
           // Roll for boss capture if this was the final boss (index 3)
           let capturedBoss = null;
           if (session.enemyIndex === 4) { // Just completed final boss
-            const captureRate = Math.min(95, 5 + user.stats.int * 2);
+            const captureRate = 100; // 100% capture rate for testing
             const captureSuccess = Math.random() * 100 < captureRate;
             
             if (captureSuccess) {
@@ -297,10 +297,11 @@ app.post('/api/user/:id/combat/enemy-turn', (req, res) => {
     if (user.hp <= 0) {
       user.hp = 0;
       delete combatSessions[user.id];
-      return res.json({ defeat: true });
+      return res.json({ defeat: true, playerDamage: damage });
     }
     
     session.turn = 'player';
+    session.playerDamage = damage;
   }
   res.json(session);
 });
@@ -403,14 +404,50 @@ app.post('/api/user/:id/boss/:bossId/mission', (req, res) => {
   if (boss && !boss.onMission) {
     boss.onMission = true;
     boss.missionStart = Date.now();
-    boss.missionDuration = 3600000; // 1 hour
+    boss.missionDuration = 5000; // 5 seconds
     
     user.activeMissions.push({
       bossId,
       startTime: Date.now(),
-      duration: 3600000,
+      duration: 5000,
       rewards: { xp: Math.floor(Math.random() * 200) + 100, coins: Math.floor(Math.random() * 100) + 50 }
     });
+  }
+  
+  res.json(user);
+});
+
+app.post('/api/user/:id/boss/:bossId/claim', (req, res) => {
+  const user = users[req.params.id];
+  const bossId = req.params.bossId;
+  const boss = user.capturedBosses.find(b => b.id === bossId);
+  const missionIndex = user.activeMissions.findIndex(m => m.bossId === bossId);
+  
+  if (boss && missionIndex !== -1) {
+    const mission = user.activeMissions[missionIndex];
+    const currentTime = Date.now();
+    
+    // Check if mission is complete
+    if (currentTime >= mission.startTime + mission.duration) {
+      // Grant rewards
+      user.xp += mission.rewards.xp;
+      user.coins += mission.rewards.coins;
+      
+      // Level up check
+      while (user.xp >= user.level * 100) {
+        user.xp -= user.level * 100;
+        user.level++;
+        user.unspentPoints += 3;
+      }
+      
+      // Reset boss mission status
+      boss.onMission = false;
+      boss.missionStart = null;
+      boss.missionDuration = null;
+      
+      // Remove mission from active missions
+      user.activeMissions.splice(missionIndex, 1);
+    }
   }
   
   res.json(user);
