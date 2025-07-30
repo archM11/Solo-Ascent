@@ -223,6 +223,51 @@
             color: #000000;
         }
         
+        /* Chest styles */
+        .chest-card {
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .chest-card.opening {
+            border-color: #ffaa00;
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.3);
+        }
+        
+        .chest-card.ready {
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+        
+        .chest-icon {
+            font-size: 3em;
+            margin: 10px 0;
+        }
+        
+        .chest-timer {
+            color: #ffaa00;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .reward-item {
+            background: #2a2a2a;
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .reward-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
         .settings-btn {
             background: transparent;
             border: 1px solid #00ffff;
@@ -446,6 +491,139 @@
             <input type="text" id="nickname" placeholder="Warrior Name" style="width: 100%; padding: 15px; font-size: 1.2em; background: #1a1a1a; border: 2px solid #00ffff; color: #00ffff; border-radius: 5px; margin: 20px 0;">
             <button class="btn" onclick="login()" style="width: 100%; padding: 20px; font-size: 1.2em;">🚀 BEGIN ASCENT</button>
         </div>
+        
+        <!-- Preferences Setup Screen -->
+        <div id="preferences" class="screen">
+            <div class="header">
+                <h1>⚙️ CUSTOMIZE YOUR JOURNEY</h1>
+                <p>Tell us about your fitness goals to personalize your experience</p>
+            </div>
+            
+            <div class="settings-container">
+                <div class="settings-box">
+                    <div class="settings-box-title">gym experience level</div>
+                    <div class="settings-controls">
+                        <select id="gymLevelSetup" class="difficulty-select">
+                            <option value="beginner">beginner - new to fitness</option>
+                            <option value="intermediate" selected>intermediate - some experience</option>
+                            <option value="advanced">advanced - experienced athlete</option>
+                        </select>
+                        <div class="difficulty-info">
+                            <span id="gymLevelDesc">moderate intensity workouts</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-box">
+                    <div class="settings-box-title">preferred workout split</div>
+                    <div class="settings-controls">
+                        <div class="split-options">
+                            <button class="split-btn active" onclick="selectSetupSplit('full-body')">full body</button>
+                            <button class="split-btn" onclick="selectSetupSplit('upper-lower')">upper/lower</button>
+                            <button class="split-btn" onclick="selectSetupSplit('push-pull')">push/pull/legs</button>
+                        </div>
+                        <div class="difficulty-info">
+                            <span id="splitDesc">work entire body each session</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-box">
+                    <div class="settings-box-title">preferred activities</div>
+                    <div class="settings-group">
+                        <label class="setting-item">
+                            <span>bodyweight exercises</span>
+                            <input type="checkbox" id="bodyweightSetup" checked>
+                        </label>
+                        <label class="setting-item">
+                            <span>cardio workouts</span>
+                            <input type="checkbox" id="cardioSetup">
+                        </label>
+                        <label class="setting-item">
+                            <span>strength training</span>
+                            <input type="checkbox" id="strengthSetup">
+                        </label>
+                        <label class="setting-item">
+                            <span>flexibility/yoga</span>
+                            <input type="checkbox" id="flexibilitySetup">
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-box">
+                    <div class="settings-box-title">daily wellness goals</div>
+                    <div class="settings-group">
+                        <label class="setting-item">
+                            <span>💧 track water intake</span>
+                            <input type="checkbox" id="waterSetup" checked>
+                        </label>
+                        <label class="setting-item">
+                            <span>🚶 step counting</span>
+                            <input type="checkbox" id="stepsSetup">
+                        </label>
+                        <label class="setting-item">
+                            <span>🧘 meditation/mindfulness</span>
+                            <input type="checkbox" id="meditationSetup">
+                        </label>
+                        <label class="setting-item">
+                            <span>🤸 daily stretching</span>
+                            <input type="checkbox" id="stretchingSetup" checked>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-box">
+                    <div class="settings-box-title">fitness goals</div>
+                    <div class="settings-group">
+                        <label class="setting-item">
+                            <span>general fitness</span>
+                            <input type="checkbox" id="generalFitnessSetup" checked>
+                        </label>
+                        <label class="setting-item">
+                            <span>weight loss</span>
+                            <input type="checkbox" id="weightLossSetup">
+                        </label>
+                        <label class="setting-item">
+                            <span>muscle building</span>
+                            <input type="checkbox" id="muscleBuildingSetup">
+                        </label>
+                        <label class="setting-item">
+                            <span>endurance improvement</span>
+                            <input type="checkbox" id="enduranceSetup">
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-box">
+                    <div class="settings-box-title">rest day schedule</div>
+                    <div class="settings-controls">
+                        <label class="setting-item">
+                            <span>enable mandatory rest days</span>
+                            <input type="checkbox" id="restDaysSetup" checked>
+                        </label>
+                        <select id="restFrequencySetup" class="difficulty-select" style="margin-top: 10px;">
+                            <option value="weekly">weekly rest day</option>
+                            <option value="every-other-day">every other day</option>
+                        </select>
+                        <select id="restDayOfWeekSetup" class="difficulty-select" style="margin-top: 5px;">
+                            <option value="sunday" selected>Sunday</option>
+                            <option value="monday">Monday</option>
+                            <option value="tuesday">Tuesday</option>
+                            <option value="wednesday">Wednesday</option>
+                            <option value="thursday">Thursday</option>
+                            <option value="friday">Friday</option>
+                            <option value="saturday">Saturday</option>
+                        </select>
+                        <div class="difficulty-info" style="margin-top: 10px;">
+                            <span id="restDayDesc">Sunday will be your weekly rest day</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn" onclick="savePreferencesAndStart()" style="width: 100%; padding: 20px; font-size: 1.2em; margin-top: 20px; background: linear-gradient(45deg, #00ffff, #ffffff); color: #000000;">✨ START MY JOURNEY</button>
+            <button class="btn" onclick="skipPreferences()" style="width: 100%; padding: 10px; font-size: 1em; margin-top: 10px;">skip for now</button>
+        </div>
 
         <!-- Home Screen -->
         <div id="home" class="screen">
@@ -457,6 +635,7 @@
                 </div>
                 <div class="nav-col">
                     <button class="btn" onclick="showScreen('inventory')">🎒 Inventory</button>
+                    <button class="btn" onclick="showScreen('chests')">📦 Chests</button>
                     <button class="btn" onclick="showScreen('summoning')">👥 Party</button>
                     <button class="btn" onclick="showScreen('music')">🎵 Music</button>
                 </div>
@@ -474,6 +653,12 @@
             </div>
 
             <button class="btn dungeons-btn" onclick="showScreen('dungeons')" style="width: 100%;">⚔️ ENTER DUNGEONS</button>
+            
+            <div id="scavengeInfo" class="card" style="display: none; margin: 10px 0;">
+                <h3>🔍 Scavenge Mode</h3>
+                <p>Collect loot from each monster defeated. Get all scavenged loot when completing or running from dungeon.</p>
+                <div id="scavengedLootSummary" style="margin-top: 10px;"></div>
+            </div>
 
             <div class="stats-grid">
                 <div class="stat"><div class="stat-name">STR</div><div class="stat-value" id="strValue">1</div><button class="btn" onclick="assignStat('str')">+</button></div>
@@ -527,6 +712,7 @@
                     <button class="btn" id="attackBtn" onclick="attack()">⚔️ ATTACK</button>
                     <button class="btn" id="itemBtn" onclick="showCombatItems()">🧪 ITEM</button>
                     <button class="btn" id="runBtn" onclick="runAway()">🏃 RUN</button>
+                    <button class="btn" id="scavengeBtn" onclick="toggleScavenge()">🔍 SCAVENGE</button>
                 </div>
             </div>
         </div>
@@ -712,6 +898,39 @@
         </div>
         
         <div id="leaderboard" class="screen"><button class="btn" onclick="showScreen('home')">🏠 Home</button><div class="header"><h1>🏆 LEADERBOARD</h1></div><p>Leaderboard features coming soon...</p></div>
+        
+        <!-- Rewards Screen -->
+        <div id="rewards" class="screen">
+            <div class="header">
+                <h1>🎉 REWARDS EARNED!</h1>
+                <p>You've earned some fantastic rewards!</p>
+            </div>
+            
+            <div id="rewardsContainer" class="settings-container">
+                <!-- Rewards will be populated here -->
+            </div>
+            
+            <button class="btn" id="claimRewardsBtn" onclick="claimDisplayedRewards()" style="width: 100%; padding: 20px; font-size: 1.2em; background: linear-gradient(45deg, #00ffff, #ffffff); color: #000000; margin-top: 20px;">📦 CLAIM REWARDS</button>
+        </div>
+        
+        <!-- Chests Screen -->
+        <div id="chests" class="screen">
+            <button class="btn" onclick="showScreen('home')">🏠 Home</button>
+            <div class="header">
+                <h1>📦 TREASURE CHESTS</h1>
+                <p>Open chests to claim your rewards!</p>
+            </div>
+            
+            <div id="chestsGrid" class="grid grid-2"></div>
+            
+            <div class="card" style="margin-top: 20px;">
+                <h3>📊 Chest Opening Times</h3>
+                <div class="difficulty-info">
+                    <p>📦 Wooden: 1 hour | 🗳️ Iron: 2 hours | 💼 Silver: 4 hours</p>
+                    <p>🎁 Golden: 8 hours | 💎 Platinum: 12 hours | 🏆 Legendary: 24 hours</p>
+                </div>
+            </div>
+        </div>
         <!-- Settings Screen -->
         <div id="settings" class="screen">
             <div class="settings-nav">
@@ -753,14 +972,24 @@
                 </div>
                 
                 <div class="settings-box">
-                    <div class="settings-box-title">workout splits</div>
+                    <div class="settings-box-title">fitness preferences</div>
                     <div class="settings-controls">
-                        <div class="split-options">
-                            <button class="split-btn active" onclick="selectSplit('full-body')">full body</button>
-                            <button class="split-btn" onclick="selectSplit('upper-lower')">upper/lower</button>
-                            <button class="split-btn" onclick="selectSplit('push-pull')">push/pull/legs</button>
+                        <button class="settings-btn" onclick="openPreferencesEditor()">edit preferences</button>
+                        <div class="difficulty-info" style="margin-top: 10px;">
+                            <span id="currentPrefsDisplay">current settings: loading...</span>
                         </div>
-                        <button class="settings-btn" onclick="customizeSplit()">customize</button>
+                    </div>
+                </div>
+                
+                <div class="settings-box">
+                    <div class="settings-box-title">preferences info</div>
+                    <div class="settings-controls">
+                        <div class="difficulty-info">
+                            <p style="margin-bottom: 10px;">🎯 <strong>Daily Tasks:</strong> Automatically generated based on your workout split, gym level, and wellness goals.</p>
+                            <p style="margin-bottom: 10px;">⚔️ <strong>Dungeon Exercises:</strong> Discovery-based challenges that introduce new movements and variations.</p>
+                            <p style="margin-bottom: 10px;">📈 <strong>Progression:</strong> Task difficulty scales with your experience level for optimal challenge.</p>
+                            <p>💡 <strong>Tip:</strong> Update your preferences anytime to keep your fitness journey fresh and aligned with your goals!</p>
+                        </div>
                     </div>
                 </div>
                 
@@ -884,6 +1113,7 @@
             if (screenName === 'profile') loadProfile();
             if (screenName === 'settings') loadSettings();
             if (screenName === 'summoning') loadSummoning();
+            if (screenName === 'chests') loadChests();
         };
 
         // Authentication
@@ -891,13 +1121,125 @@
             const nickname = document.getElementById('nickname').value.trim();
             if (!nickname) return showNotification('Please enter a nickname', 'warning');
             
+            // Store nickname temporarily and show preferences screen
+            window.tempNickname = nickname;
+            showScreen('preferences');
+            setupPreferencesDescriptions();
+        };
+        
+        const setupPreferencesDescriptions = () => {
+            const gymLevel = document.getElementById('gymLevelSetup');
+            const gymLevelDesc = document.getElementById('gymLevelDesc');
+            const splitDesc = document.getElementById('splitDesc');
+            const restDaysCheckbox = document.getElementById('restDaysSetup');
+            const restFrequency = document.getElementById('restFrequencySetup');
+            const restDayOfWeek = document.getElementById('restDayOfWeekSetup');
+            const restDayDesc = document.getElementById('restDayDesc');
+            
+            gymLevel.onchange = () => {
+                const descriptions = {
+                    beginner: 'gentle, beginner-friendly workouts',
+                    intermediate: 'moderate intensity workouts',
+                    advanced: 'challenging, high-intensity workouts'
+                };
+                gymLevelDesc.textContent = descriptions[gymLevel.value];
+            };
+            
+            const updateRestDayDescription = () => {
+                if (!restDaysCheckbox.checked) {
+                    restDayDesc.textContent = 'no mandatory rest days';
+                    return;
+                }
+                
+                if (restFrequency.value === 'weekly') {
+                    const day = restDayOfWeek.value;
+                    restDayDesc.textContent = `${day} will be your weekly rest day`;
+                } else {
+                    restDayDesc.textContent = 'rest every other day automatically';
+                }
+            };
+            
+            restDaysCheckbox.onchange = updateRestDayDescription;
+            restFrequency.onchange = () => {
+                restDayOfWeek.style.display = restFrequency.value === 'weekly' ? 'block' : 'none';
+                updateRestDayDescription();
+            };
+            restDayOfWeek.onchange = updateRestDayDescription;
+            
+            // Initial setup
+            updateRestDayDescription();
+        };
+        
+        const selectSetupSplit = (splitType) => {
+            document.querySelectorAll('#preferences .split-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const descriptions = {
+                'full-body': 'work entire body each session',
+                'upper-lower': 'alternate upper and lower body days',
+                'push-pull': 'separate push, pull, and leg movements'
+            };
+            
+            document.getElementById('splitDesc').textContent = descriptions[splitType];
+        };
+        
+        const savePreferencesAndStart = async () => {
+            // Get selected workout split
+            let selectedSplit = 'full-body';
+            const activeSplitBtn = document.querySelector('#preferences .split-btn.active');
+            if (activeSplitBtn) {
+                const onclickStr = activeSplitBtn.getAttribute('onclick');
+                if (onclickStr.includes('upper-lower')) selectedSplit = 'upper-lower';
+                else if (onclickStr.includes('push-pull')) selectedSplit = 'push-pull';
+            }
+            
+            const preferences = {
+                workoutSplit: selectedSplit,
+                gymLevel: document.getElementById('gymLevelSetup').value,
+                preferredActivities: [
+                    ...(document.getElementById('bodyweightSetup').checked ? ['bodyweight'] : []),
+                    ...(document.getElementById('cardioSetup').checked ? ['cardio'] : []),
+                    ...(document.getElementById('strengthSetup').checked ? ['strength'] : []),
+                    ...(document.getElementById('flexibilitySetup').checked ? ['flexibility'] : [])
+                ],
+                dailyGoals: {
+                    waterIntake: document.getElementById('waterSetup').checked,
+                    steps: document.getElementById('stepsSetup').checked,
+                    meditation: document.getElementById('meditationSetup').checked,
+                    stretching: document.getElementById('stretchingSetup').checked
+                },
+                goals: [
+                    ...(document.getElementById('generalFitnessSetup').checked ? ['general-fitness'] : []),
+                    ...(document.getElementById('weightLossSetup').checked ? ['weight-loss'] : []),
+                    ...(document.getElementById('muscleBuildingSetup').checked ? ['muscle-building'] : []),
+                    ...(document.getElementById('enduranceSetup').checked ? ['endurance'] : [])
+                ],
+                restDays: {
+                    enabled: document.getElementById('restDaysSetup').checked,
+                    frequency: document.getElementById('restFrequencySetup').value,
+                    dayOfWeek: document.getElementById('restDayOfWeekSetup').value
+                }
+            };
+            
             currentUser = await request('/login', {
                 method: 'POST',
-                body: JSON.stringify({ nickname })
+                body: JSON.stringify({ nickname: window.tempNickname, preferences })
             });
             
             showScreen('home');
             updateUI();
+            showNotification('Welcome! Your personalized fitness journey begins now! 🚀', 'success', 4000);
+        };
+        
+        const skipPreferences = async () => {
+            currentUser = await request('/login', {
+                method: 'POST',
+                body: JSON.stringify({ nickname: window.tempNickname })
+            });
+            
+            showScreen('home');
+            updateUI();
+            showNotification('You can set your preferences anytime in Settings ⚙️', 'info');
         };
 
         // UI Updates
@@ -968,16 +1310,34 @@
 
         // Game actions
         const completeTask = async (taskIndex) => {
-            await request(`/user/${currentUser.id}/tasks/complete`, {
-                method: 'POST',
-                body: JSON.stringify({ taskIndex })
-            });
-            currentUser = await request(`/user/${currentUser.id}`);
-            updateUI();
+            try {
+                const result = await request(`/user/${currentUser.id}/tasks/complete`, {
+                    method: 'POST',
+                    body: JSON.stringify({ taskIndex })
+                });
+                
+                if (result.success) {
+                    // Update completed tasks immediately
+                    currentUser.dailyTasks.completed = result.completed;
+                    updateUI();
+                    showNotification('Task completed! ✨', 'success', 2000);
+                    
+                    // Check if all tasks completed - show reward screen
+                    if (currentUser.dailyTasks.completed.length === 5) {
+                        setTimeout(() => showDailyTaskRewardScreen(), 1000);
+                    }
+                } else {
+                    showNotification('Failed to complete task', 'error');
+                }
+            } catch (error) {
+                console.error('Error completing task:', error);
+                showNotification('Error completing task', 'error');
+            }
         };
 
         const claimRewards = async () => {
-            currentUser = await request(`/user/${currentUser.id}/tasks/claim`, { method: 'POST' });
+            const result = await request(`/user/${currentUser.id}/tasks/claim`, { method: 'POST' });
+            currentUser = result.user || result;
             updateUI();
             showNotification('Claimed 100 XP and 50 coins!', 'success');
         };
@@ -1106,8 +1466,13 @@
                 // Keep damage log visible during entire delay (900ms)
                 setTimeout(() => {
                     hideDamageLog();
-                    console.log('Boss delay complete, showing capture screen');
-                    showCaptureScreen(result);
+                    console.log('Boss delay complete, showing rewards screen');
+                    // Show dungeon reward screen before capture screen
+                    if (result.dungeonChest || result.scavengeChest) {
+                        showDungeonRewardScreen(result);
+                    } else {
+                        showCaptureScreen(result);
+                    }
                 }, 900);
                 return;
             }
@@ -1128,8 +1493,13 @@
                 if (result.victory) {
                     setTimeout(() => {
                         hideDamageLog();
-                        console.log('Boss delay complete, showing capture screen');
-                        showCaptureScreen(result);
+                        console.log('Boss delay complete, showing rewards screen');
+                        // Show dungeon reward screen before capture screen
+                        if (result.dungeonChest || result.scavengeChest) {
+                            showDungeonRewardScreen(result);
+                        } else {
+                            showCaptureScreen(result);
+                        }
                     }, 900);
                 } else {
                     proceedAfterDamage(result);
@@ -1171,8 +1541,13 @@
                 document.getElementById('runBtn').disabled = true;
                 
                 setTimeout(() => {
-                    console.log('Boss delay complete, showing capture screen');
-                    showCaptureScreen(result);
+                    console.log('Boss delay complete, showing rewards screen');
+                    // Show dungeon reward screen before capture screen
+                    if (result.dungeonChest || result.scavengeChest) {
+                        showDungeonRewardScreen(result);
+                    } else {
+                        showCaptureScreen(result);
+                    }
                 }, 900);
                 return;
             }
@@ -1346,7 +1721,14 @@
                 showNotification('Cannot use this item right now', 'warning');
             }
         };
-        const runAway = () => { showScreen('dungeons'); currentCombat = null; };
+        const runAway = async () => { 
+            // Collect any scavenged loot before leaving
+            if (currentUser && currentUser.scavengedLoot && currentUser.scavengedLoot.length > 0) {
+                await collectScavengedLoot();
+            }
+            showScreen('dungeons'); 
+            currentCombat = null; 
+        };
 
         let captureResultData = null;
 
@@ -1739,6 +2121,7 @@
         // Settings functions
         const loadSettings = () => {
             updateSettingsTasks();
+            updateCurrentPrefsDisplay();
         };
 
         const updateSettingsTasks = () => {
@@ -1782,14 +2165,36 @@
             localStorage.setItem('workoutDifficulty', difficulty);
         };
 
-        const selectSplit = (splitType) => {
-            document.querySelectorAll('.split-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            localStorage.setItem('workoutSplit', splitType);
+        const openPreferencesEditor = async () => {
+            if (!currentUser || !currentUser.preferences) {
+                showNotification('Preferences not available', 'warning');
+                return;
+            }
+            
+            // Create a modal or new screen for editing preferences
+            showNotification('Opening preferences editor...', 'info');
+            
+            // For now, show current preferences
+            const prefs = currentUser.preferences;
+            const prefsText = `
+                Workout Split: ${prefs.workoutSplit}\n
+                Gym Level: ${prefs.gymLevel}\n
+                Activities: ${prefs.preferredActivities.join(', ')}\n
+                Daily Goals: ${Object.entries(prefs.dailyGoals).filter(([k,v]) => v).map(([k,v]) => k).join(', ')}\n
+                Fitness Goals: ${prefs.goals.join(', ')}
+            `;
+            alert('Current Preferences:' + prefsText + '\n\nFull preference editor coming soon!');
         };
-
-        const customizeSplit = () => {
-            showNotification('Custom workout split editor coming soon!', 'info');
+        
+        const updateCurrentPrefsDisplay = () => {
+            if (!currentUser || !currentUser.preferences) {
+                document.getElementById('currentPrefsDisplay').textContent = 'preferences not set';
+                return;
+            }
+            
+            const prefs = currentUser.preferences;
+            const display = `${prefs.workoutSplit} split, ${prefs.gymLevel} level`;
+            document.getElementById('currentPrefsDisplay').textContent = display;
         };
 
         const resetProgress = () => {
@@ -1915,6 +2320,202 @@
             });
         };
 
+        // Chest management functions
+        const loadChests = async () => {
+            const chestsData = await request(`/user/${currentUser.id}/chests`);
+            const chestsGrid = document.getElementById('chestsGrid');
+            
+            chestsGrid.innerHTML = '';
+            
+            if (chestsData.chests.length === 0) {
+                chestsGrid.innerHTML = '<div class="card" style="grid-column: 1 / -1;"><h3>No chests available</h3><p>Complete daily tasks and dungeons to earn chests!</p></div>';
+                return;
+            }
+            
+            chestsData.chests.forEach(chest => {
+                const chestCard = document.createElement('div');
+                chestCard.className = 'chest-card';
+                
+                const now = Date.now();
+                const canOpen = chest.openTimeHours === 0 || !chest.isOpening || (chest.isOpening && (now - chest.startedOpening) >= (chest.openTimeHours * 60 * 60 * 1000));
+                
+                if (canOpen && chest.isOpening) {
+                    chestCard.classList.add('ready');
+                } else if (chest.isOpening) {
+                    chestCard.classList.add('opening');
+                }
+                
+                let timerText = '';
+                if (chest.openTimeHours === 0) {
+                    timerText = 'Ready to open!';
+                } else if (chest.isOpening) {
+                    const remainingTime = (chest.openTimeHours * 60 * 60 * 1000) - (now - chest.startedOpening);
+                    if (remainingTime <= 0) {
+                        timerText = 'Ready to open!';
+                    } else {
+                        const hours = Math.floor(remainingTime / (60 * 60 * 1000));
+                        const minutes = Math.floor((remainingTime % (60 * 60 * 1000)) / (60 * 1000));
+                        timerText = `${hours}h ${minutes}m remaining`;
+                    }
+                } else {
+                    timerText = `${chest.openTimeHours}h to open`;
+                }
+                
+                chestCard.innerHTML = `
+                    <div class="chest-icon">${chest.icon}</div>
+                    <h4 class="rarity-${chest.tier}">${chest.name}</h4>
+                    <p>Source: ${chest.source}</p>
+                    <div class="chest-timer">${timerText}</div>
+                    <button class="btn" onclick="handleChest('${chest.id}')" ${!canOpen && chest.isOpening ? 'disabled' : ''}>
+                        ${chest.openTimeHours === 0 ? 'Open Now' : chest.isOpening ? (canOpen ? 'Open!' : 'Opening...') : 'Start Opening'}
+                    </button>
+                `;
+                
+                chestsGrid.appendChild(chestCard);
+            });
+        };
+        
+        const handleChest = async (chestId) => {
+            const chest = currentUser.chests.find(c => c.id === chestId);
+            if (!chest) return;
+            
+            if (chest.openTimeHours === 0 || (chest.isOpening && Date.now() - chest.startedOpening >= chest.openTimeHours * 60 * 60 * 1000)) {
+                // Open the chest
+                const result = await request(`/user/${currentUser.id}/chest/${chestId}/open`, { method: 'POST' });
+                if (result.success) {
+                    currentUser = result.user;
+                    updateUI();
+                    showNotification(`Opened ${chest.name}! Got ${result.contents.coins} coins, ${result.contents.xp} XP, and ${result.contents.items.length} items!`, 'success', 4000);
+                    loadChests();
+                }
+            } else if (!chest.isOpening) {
+                // Start opening the chest
+                const result = await request(`/user/${currentUser.id}/chest/${chestId}/start-opening`, { method: 'POST' });
+                if (result.success) {
+                    showNotification(`Started opening ${chest.name}. Come back in ${chest.openTimeHours} hour(s)!`, 'info');
+                    loadChests();
+                }
+            }
+        };
+        
+        // Reward screen functions
+        let currentRewardData = null;
+        
+        const showDungeonRewardScreen = (result) => {
+            currentRewardData = result;
+            const container = document.getElementById('rewardsContainer');
+            container.innerHTML = '';
+            
+            // Show dungeon chest
+            if (result.dungeonChest) {
+                const chestDiv = document.createElement('div');
+                chestDiv.className = 'reward-item';
+                chestDiv.innerHTML = `
+                    <div class="reward-icon">${result.dungeonChest.icon}</div>
+                    <h3 class="rarity-${result.dungeonChest.tier}">${result.dungeonChest.name}</h3>
+                    <p>From: Dungeon Clear</p>
+                    <p style="color: #00ff00;">Opens instantly!</p>
+                `;
+                container.appendChild(chestDiv);
+            }
+            
+            // Show scavenge chest if any
+            if (result.scavengeChest) {
+                const chestDiv = document.createElement('div');
+                chestDiv.className = 'reward-item';
+                chestDiv.innerHTML = `
+                    <div class="reward-icon">${result.scavengeChest.icon}</div>
+                    <h3 class="rarity-${result.scavengeChest.tier}">${result.scavengeChest.name}</h3>
+                    <p>From: Scavenged Loot</p>
+                    <p style="color: #ffaa00;">Opens in ${result.scavengeChest.openTimeHours}h</p>
+                `;
+                container.appendChild(chestDiv);
+            }
+            
+            // Show basic rewards
+            const rewardsDiv = document.createElement('div');
+            rewardsDiv.className = 'reward-item';
+            rewardsDiv.innerHTML = `
+                <div class="reward-icon">🎆</div>
+                <h3>Dungeon Rewards</h3>
+                <p>💰 ${result.rewards.coins} Coins</p>
+                <p>⭐ ${result.rewards.xp} XP</p>
+            `;
+            container.appendChild(rewardsDiv);
+            
+            document.getElementById('claimRewardsBtn').onclick = () => claimDungeonRewards();
+            showScreen('rewards');
+        };
+        
+        const showDailyTaskRewardScreen = () => {
+            const container = document.getElementById('rewardsContainer');
+            container.innerHTML = '';
+            
+            const rewardsDiv = document.createElement('div');
+            rewardsDiv.className = 'reward-item';
+            rewardsDiv.innerHTML = `
+                <div class="reward-icon">🎉</div>
+                <h3>All Daily Tasks Complete!</h3>
+                <p>Great job finishing all your daily tasks!</p>
+                <p>Claim your rewards to get a chest and bonuses!</p>
+            `;
+            container.appendChild(rewardsDiv);
+            
+            document.getElementById('claimRewardsBtn').onclick = () => claimDailyRewards();
+            showScreen('rewards');
+        };
+        
+        const claimDungeonRewards = () => {
+            showNotification('Dungeon rewards claimed!', 'success');
+            
+            if (currentRewardData.captured !== undefined) {
+                showCaptureScreen(currentRewardData);
+            } else {
+                showScreen('dungeons');
+            }
+        };
+        
+        const claimDailyRewards = async () => {
+            const result = await request(`/user/${currentUser.id}/tasks/claim`, { method: 'POST' });
+            currentUser = result.user || result;
+            updateUI();
+            showNotification('Daily task rewards claimed! You got a chest!', 'success');
+            showScreen('home');
+        };
+        
+        // Simple scavenge functions  
+        const toggleScavenge = async () => {
+            if (!currentCombat) {
+                showNotification('No active combat session', 'warning');
+                return;
+            }
+            
+            const result = await request(`/user/${currentUser.id}/dungeon/${currentCombat.tier}/toggle-scavenge`, { method: 'POST' });
+            currentCombat = result.session;
+            
+            const btn = document.getElementById('scavengeBtn');
+            if (result.scavenging) {
+                btn.textContent = '🔍 SCAVENGING';
+                btn.style.background = '#00ff00';
+                showNotification('Scavenging enabled!', 'success');
+            } else {
+                btn.textContent = '🔍 SCAVENGE';
+                btn.style.background = '';
+                showNotification('Scavenging disabled', 'info');
+            }
+        };
+        
+        const collectScavengedLoot = async () => {
+            if (!currentUser.scavengedLoot || currentUser.scavengedLoot.length === 0) return;
+            
+            const result = await request(`/user/${currentUser.id}/scavenged-loot/collect`, { method: 'POST' });
+            if (result.success) {
+                currentUser = result.user;
+                updateUI();
+                showNotification(`Collected ${result.totalCoins} coins, ${result.totalXp} XP, and ${result.items.length} items!`, 'success');
+            }
+        };
+        
         // Auto-refresh user data
         setInterval(async () => {
             if (currentUser) {
@@ -1925,6 +2526,9 @@
                 }
                 if (document.getElementById('summoning').classList.contains('active')) {
                     updateBossGrid();
+                }
+                if (document.getElementById('chests').classList.contains('active')) {
+                    loadChests();
                 }
             }
         }, 30000);

@@ -13,7 +13,7 @@ const users = {};
 const combatSessions = {};
 
 // Data templates
-const createUser = (nickname) => {
+const createUser = (nickname, preferences = null) => {
   const starterItems = [
     { id: uuidv4(), name: 'Iron Sword', category: 'weapons', rarity: 'E', stats: { str: 2, agi: 1 }, description: 'A sturdy iron blade' },
     { id: uuidv4(), name: 'Leather Helmet', category: 'armor', rarity: 'E', stats: { vit: 2 }, description: 'Basic leather protection' },
@@ -27,14 +27,37 @@ const createUser = (nickname) => {
     { id: uuidv4(), name: 'Agility Tonic', category: 'potions', rarity: 'D', stats: {}, description: 'Temporarily boosts AGI by 5', effect: 'buff_agi', value: 5, duration: 300000 }
   ];
   
+  const defaultPreferences = {
+    workoutSplit: 'full-body',
+    gymLevel: 'beginner',
+    goals: ['general-fitness'],
+    preferredActivities: ['bodyweight'],
+    dailyGoals: {
+      waterIntake: true,
+      steps: false,
+      meditation: false,
+      stretching: true
+    },
+    restDays: {
+      enabled: true,
+      frequency: 'weekly', // weekly, every-other-day
+      dayOfWeek: 'sunday' // for weekly rest
+    }
+  };
+  
+  const userPrefs = preferences || defaultPreferences;
+  const dailyTasks = generateDailyTasks(userPrefs);
+  
   return {
     id: uuidv4(), nickname, level: 1, xp: 0, hp: 100, maxHp: 100, coins: 1000,
     stats: { str: 20, agi: 20, vit: 20, int: 20, per: 20 }, unspentPoints: 0,
     inventory: { equipped: { weapon: null, armor: [null,null,null,null], accessories: [null,null,null,null] }, items: starterItems },
-    dailyTasks: { tasks: ['Push-ups (10)', 'Squats (15)', 'Jumping Jacks (20)', 'Plank (30s)', 'Burpees (5)'], completed: [], lastClaimed: 0, lastReset: 0 },
+    dailyTasks: { tasks: dailyTasks, completed: [], lastClaimed: 0, lastReset: 0 },
     dungeonProgress: { completedToday: [], totalClears: {E:0,D:0,C:0,B:0,A:0,S:0}, lastReset: 0 },
     shopState: { items: [], purchased: [], lastRefresh: 0 }, playlist: [],
-    friends: [], capturedBosses: [], party: []
+    friends: [], capturedBosses: [], party: [],
+    preferences: userPrefs,
+    hasSetPreferences: preferences !== null
   };
 };
 
@@ -93,6 +116,257 @@ const itemPool = {
 };
 
 const workoutPrompts = ['10 Push-ups','15 Squats','20 Jumping Jacks','30 Second Plank','5 Burpees','25 Crunches','15 Lunges','10 Burpees'];
+
+const generateDailyTasks = (preferences) => {
+  const tasks = [];
+  
+  // Check if it's a rest day
+  if (isRestDay(preferences)) {
+    return [
+      '🛌 Rest Day: Take it easy today',
+      '🚶 Light walk (15-20 minutes)',
+      '🧘 Gentle stretching or meditation',
+      '🥤 Stay hydrated - drink plenty of water',
+      '😴 Get quality sleep tonight'
+    ];
+  }
+  
+  // Add water intake if enabled
+  if (preferences.dailyGoals.waterIntake) {
+    tasks.push('🥤 Drink 8 glasses of water');
+  }
+  
+  // Add step goal if enabled
+  if (preferences.dailyGoals.steps) {
+    const stepTarget = preferences.gymLevel === 'beginner' ? 5000 : preferences.gymLevel === 'intermediate' ? 8000 : 10000;
+    tasks.push(`🚶 Walk ${stepTarget} steps`);
+  }
+  
+  // Add meditation if enabled
+  if (preferences.dailyGoals.meditation) {
+    const duration = preferences.gymLevel === 'beginner' ? 5 : preferences.gymLevel === 'intermediate' ? 10 : 15;
+    tasks.push(`🧘 Meditate for ${duration} minutes`);
+  }
+  
+  // Add stretching if enabled
+  if (preferences.dailyGoals.stretching) {
+    tasks.push('🤸 Complete 10-minute stretching routine');
+  }
+  
+  // Add workout-specific tasks based on split and level
+  const workoutTasks = getWorkoutTasks(preferences);
+  tasks.push(...workoutTasks);
+  
+  // Ensure we have exactly 5 tasks
+  while (tasks.length < 5) {
+    const genericTasks = ['💪 Complete bonus workout', '🏃 Do light cardio (10 min)', '🍎 Eat a healthy meal'];
+    const randomTask = genericTasks[Math.floor(Math.random() * genericTasks.length)];
+    if (!tasks.includes(randomTask)) {
+      tasks.push(randomTask);
+    }
+  }
+  
+  return tasks.slice(0, 5);
+};
+
+const getWorkoutTasks = (preferences) => {
+  const { workoutSplit, gymLevel, preferredActivities } = preferences;
+  const intensity = { beginner: 1, intermediate: 1.5, advanced: 2 }[gymLevel] || 1;
+  
+  const tasks = [];
+  
+  if (workoutSplit === 'full-body') {
+    if (preferredActivities.includes('bodyweight')) {
+      tasks.push(`💪 Push-ups (${Math.floor(10 * intensity)})`);
+      tasks.push(`🦵 Squats (${Math.floor(15 * intensity)})`);
+    }
+    if (preferredActivities.includes('cardio')) {
+      tasks.push(`🏃 Jumping Jacks (${Math.floor(20 * intensity)})`);
+    }
+  } else if (workoutSplit === 'upper-lower') {
+    const isUpperDay = Math.random() > 0.5;
+    if (isUpperDay) {
+      tasks.push(`💪 Upper body workout (${Math.floor(20 * intensity)} min)`);
+      if (preferredActivities.includes('bodyweight')) {
+        tasks.push(`🤲 Push-ups (${Math.floor(12 * intensity)})`);
+      }
+    } else {
+      tasks.push(`🦵 Lower body workout (${Math.floor(20 * intensity)} min)`);
+      if (preferredActivities.includes('bodyweight')) {
+        tasks.push(`🦵 Squats (${Math.floor(18 * intensity)})`);
+      }
+    }
+  } else if (workoutSplit === 'push-pull') {
+    const dayType = ['push', 'pull', 'legs'][Math.floor(Math.random() * 3)];
+    if (dayType === 'push') {
+      tasks.push(`💪 Push workout (${Math.floor(25 * intensity)} min)`);
+    } else if (dayType === 'pull') {
+      tasks.push(`🤲 Pull workout (${Math.floor(25 * intensity)} min)`);
+    } else {
+      tasks.push(`🦵 Leg workout (${Math.floor(25 * intensity)} min)`);
+    }
+  }
+  
+  return tasks;
+};
+
+const generateDungeonWorkout = (preferences) => {
+  const { gymLevel } = preferences;
+  const intensity = { beginner: 1, intermediate: 1.5, advanced: 2 }[gymLevel] || 1;
+  
+  // Normal, tried and true workouts for dungeons
+  const basicWorkouts = [
+    `Push-ups (${Math.floor(10 * intensity)})`,
+    `Squats (${Math.floor(15 * intensity)})`,
+    `Jumping Jacks (${Math.floor(20 * intensity)})`,
+    `Lunges (${Math.floor(12 * intensity)})`,
+    `Burpees (${Math.floor(5 * intensity)})`,
+    `Mountain Climbers (${Math.floor(15 * intensity)})`,
+    `Plank Hold (${Math.floor(30 * intensity)} seconds)`,
+    `High Knees (${Math.floor(20 * intensity)})`,
+    `Crunches (${Math.floor(15 * intensity)})`,
+    `Wall Sit (${Math.floor(20 * intensity)} seconds)`
+  ];
+  
+  return basicWorkouts[Math.floor(Math.random() * basicWorkouts.length)];
+};
+
+const chestTypes = {
+  E: { name: 'Wooden Chest', openTime: 1, icon: '📦', color: '#8B4513' },
+  D: { name: 'Iron Chest', openTime: 2, icon: '🗳️', color: '#708090' },
+  C: { name: 'Silver Chest', openTime: 4, icon: '💼', color: '#C0C0C0' },
+  B: { name: 'Golden Chest', openTime: 8, icon: '🎁', color: '#FFD700' },
+  A: { name: 'Platinum Chest', openTime: 12, icon: '💎', color: '#E5E4E2' },
+  S: { name: 'Legendary Chest', openTime: 24, icon: '🏆', color: '#FF6347' }
+};
+
+const generateChest = (tier, source = 'dungeon') => {
+  const chestInfo = chestTypes[tier];
+  return {
+    id: uuidv4(),
+    tier,
+    name: chestInfo.name,
+    icon: chestInfo.icon,
+    color: chestInfo.color,
+    openTimeHours: chestInfo.openTime,
+    source, // 'dungeon', 'daily-tasks', 'scavenge'
+    obtainedAt: Date.now(),
+    startedOpening: null,
+    isOpening: false,
+    contents: generateChestContents(tier)
+  };
+};
+
+const generateChestContents = (tier) => {
+  const contents = { coins: 0, xp: 0, items: [] };
+  const tierLevel = tier.charCodeAt(0) - 69; // E=0, D=1, etc.
+  
+  // Base rewards scale with tier
+  contents.coins = Math.floor((50 + tierLevel * 30) * (0.8 + Math.random() * 0.4));
+  contents.xp = Math.floor((25 + tierLevel * 15) * (0.8 + Math.random() * 0.4));
+  
+  // Item drops - higher tiers have more items
+  const numItems = Math.min(3, Math.floor(Math.random() * (tierLevel + 2)));
+  
+  for (let i = 0; i < numItems; i++) {
+    const categories = ['weapons', 'armor', 'accessories', 'potions'];
+    const category = categories[Math.floor(Math.random() * categories.length)];
+    
+    // Chest tier influences item rarity
+    let itemRarity = 'E';
+    const rarityRoll = Math.random();
+    
+    if (tierLevel >= 5 && rarityRoll < 0.15) itemRarity = 'S';
+    else if (tierLevel >= 4 && rarityRoll < 0.25) itemRarity = 'A';
+    else if (tierLevel >= 3 && rarityRoll < 0.35) itemRarity = 'B';
+    else if (tierLevel >= 2 && rarityRoll < 0.5) itemRarity = 'C';
+    else if (tierLevel >= 1 && rarityRoll < 0.7) itemRarity = 'D';
+    
+    const possibleItems = itemPool[category].filter(item => item.rarity === itemRarity);
+    if (possibleItems.length > 0) {
+      const baseItem = possibleItems[Math.floor(Math.random() * possibleItems.length)];
+      const item = {
+        id: uuidv4(),
+        name: baseItem.name,
+        category: baseItem.category,
+        rarity: baseItem.rarity,
+        description: baseItem.description,
+        stats: { ...baseItem.stats },
+        effect: baseItem.effect,
+        value: baseItem.value,
+        duration: baseItem.duration
+      };
+      contents.items.push(item);
+    }
+  }
+  
+  return contents;
+};
+
+const generateMonsterLoot = (tier, monsterName) => {
+  const tierLevel = tier.charCodeAt(0) - 69;
+  const lootRoll = Math.random();
+  
+  // 60% chance for loot drop
+  if (lootRoll > 0.6) return null;
+  
+  const loot = {
+    id: uuidv4(),
+    monsterName,
+    tier,
+    coins: Math.floor((10 + tierLevel * 5) * (0.5 + Math.random() * 0.5)),
+    xp: Math.floor((5 + tierLevel * 3) * (0.5 + Math.random() * 0.5))
+  };
+  
+  // 30% chance for item drop
+  if (Math.random() < 0.3) {
+    const categories = ['weapons', 'armor', 'accessories', 'potions'];
+    const category = categories[Math.floor(Math.random() * categories.length)];
+    
+    let itemRarity = 'E';
+    const rarityRoll = Math.random();
+    if (tierLevel >= 3 && rarityRoll < 0.1) itemRarity = 'C';
+    else if (tierLevel >= 1 && rarityRoll < 0.3) itemRarity = 'D';
+    
+    const possibleItems = itemPool[category].filter(item => item.rarity === itemRarity);
+    if (possibleItems.length > 0) {
+      const baseItem = possibleItems[Math.floor(Math.random() * possibleItems.length)];
+      loot.item = {
+        id: uuidv4(),
+        name: baseItem.name,
+        category: baseItem.category,
+        rarity: baseItem.rarity,
+        description: baseItem.description,
+        stats: { ...baseItem.stats },
+        effect: baseItem.effect,
+        value: baseItem.value,
+        duration: baseItem.duration
+      };
+    }
+  }
+  
+  return loot;
+};
+
+const isRestDay = (preferences) => {
+  if (!preferences.restDays.enabled) return false;
+  
+  const today = new Date();
+  
+  if (preferences.restDays.frequency === 'weekly') {
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const todayName = dayNames[today.getDay()];
+    return todayName === preferences.restDays.dayOfWeek;
+  }
+  
+  // For every-other-day, check if it's an odd day of the year
+  if (preferences.restDays.frequency === 'every-other-day') {
+    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    return dayOfYear % 2 === 0;
+  }
+  
+  return false;
+};
 
 // Utility functions
 const checkDailyReset = (user) => {
@@ -184,9 +458,24 @@ const calculateStats = (user) => {
 
 // API Routes
 app.post('/api/login', (req, res) => {
-  const user = createUser(req.body.nickname);
+  const { nickname, preferences } = req.body;
+  const user = createUser(nickname, preferences);
   users[user.id] = user;
   generateShopItems(user);
+  res.json(user);
+});
+
+app.post('/api/user/:id/preferences', (req, res) => {
+  const user = users[req.params.id];
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  
+  user.preferences = { ...user.preferences, ...req.body };
+  user.hasSetPreferences = true;
+  
+  // Regenerate daily tasks based on new preferences
+  user.dailyTasks.tasks = generateDailyTasks(user.preferences);
+  user.dailyTasks.completed = []; // Reset completed tasks when preferences change
+  
   res.json(user);
 });
 
@@ -213,11 +502,16 @@ app.get('/api/user/:id', (req, res) => {
 
 app.post('/api/user/:id/tasks/complete', (req, res) => {
   const user = users[req.params.id];
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  
   const { taskIndex } = req.body;
-  if (!user.dailyTasks.completed.includes(taskIndex)) {
-    user.dailyTasks.completed.push(taskIndex);
+  if (taskIndex >= 0 && taskIndex < user.dailyTasks.tasks.length) {
+    if (!user.dailyTasks.completed.includes(taskIndex)) {
+      user.dailyTasks.completed.push(taskIndex);
+    }
   }
-  res.json(user.dailyTasks);
+  
+  res.json({ success: true, completed: user.dailyTasks.completed });
 });
 
 app.post('/api/user/:id/tasks/claim', (req, res) => {
@@ -274,10 +568,12 @@ app.post('/api/user/:id/dungeon/:tier/enter', (req, res) => {
 });
 
 app.post('/api/user/:id/combat/attack', (req, res) => {
+  const user = users[req.params.id];
   const session = combatSessions[req.params.id];
   if (session && session.turn === 'player') {
     session.awaitingWorkout = true;
-    session.workoutPrompt = workoutPrompts[Math.floor(Math.random() * workoutPrompts.length)];
+    // Use normal workouts for dungeon combat
+    session.workoutPrompt = generateDungeonWorkout(user.preferences);
   }
   res.json(session);
 });
@@ -401,16 +697,43 @@ app.post('/api/user/:id/combat/confirm-workout', (req, res) => {
             }
           }
 
+          // Generate dungeon completion chest (same tier as dungeon, opens instantly)
+          const dungeonChest = generateChest(tier, 'dungeon');
+          dungeonChest.openTimeHours = 0; // Dungeon chests open instantly
+          if (!user.chests) user.chests = [];
+          user.chests.push(dungeonChest);
+          
+          // Also check for scavenged loot chest if there's scavenged loot
+          let scavengeChest = null;
+          if (!user.scavengedLoot) user.scavengedLoot = [];
+          if (user.scavengedLoot.length > 0) {
+            scavengeChest = generateChest('E', 'scavenge');
+            if (!user.chests) user.chests = [];
+            user.chests.push(scavengeChest);
+          }
+          
           delete combatSessions[user.id];
           return res.json({ 
             victory: true, 
             rewards: { xp: xpGain, coins: coinGain },
             captured: capturedBoss ? true : false,
             boss: capturedBoss,
-            itemDrops: itemDrops
+            itemDrops: itemDrops,
+            dungeonChest: dungeonChest,
+            scavengeChest: scavengeChest,
+            scavengedLoot: user.scavengedLoot.length > 0 ? [...user.scavengedLoot] : null
           });
         }
       } else {
+        // Generate monster loot if scavenging is enabled
+        if (session.scavenging) {
+          const loot = generateMonsterLoot(session.tier, session.enemy.name);
+          if (loot) {
+            if (!user.scavengedLoot) user.scavengedLoot = [];
+            user.scavengedLoot.push(loot);
+          }
+        }
+        
         // Don't spawn next enemy immediately - let client handle timing
         return res.json(session);
       }
@@ -665,6 +988,121 @@ app.post('/api/user/:id/boss/:bossId/party/remove', (req, res) => {
   user.party = user.party.filter(member => member.id !== bossId);
   
   res.json(user);
+});
+
+// Chest management endpoints
+app.get('/api/user/:id/chests', (req, res) => {
+  const user = users[req.params.id];
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  
+  res.json({ chests: user.chests });
+});
+
+app.post('/api/user/:id/chest/:chestId/start-opening', (req, res) => {
+  const user = users[req.params.id];
+  const chestId = req.params.chestId;
+  
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  
+  const chest = user.chests.find(c => c.id === chestId);
+  if (!chest) return res.status(404).json({ error: 'Chest not found' });
+  
+  if (chest.isOpening) return res.status(400).json({ error: 'Chest is already opening' });
+  
+  chest.isOpening = true;
+  chest.startedOpening = Date.now();
+  
+  res.json({ success: true, chest });
+});
+
+app.post('/api/user/:id/chest/:chestId/open', (req, res) => {
+  const user = users[req.params.id];
+  const chestId = req.params.chestId;
+  
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  
+  const chestIndex = user.chests.findIndex(c => c.id === chestId);
+  if (chestIndex === -1) return res.status(404).json({ error: 'Chest not found' });
+  
+  const chest = user.chests[chestIndex];
+  
+  if (!chest.isOpening) return res.status(400).json({ error: 'Chest opening not started' });
+  
+  const openTimeMs = chest.openTimeHours * 60 * 60 * 1000;
+  const elapsedTime = Date.now() - chest.startedOpening;
+  
+  if (elapsedTime < openTimeMs) {
+    const remainingTime = openTimeMs - elapsedTime;
+    return res.status(400).json({ error: 'Chest not ready to open', remainingTime });
+  }
+  
+  // Open the chest and give rewards
+  const contents = chest.contents;
+  user.coins += contents.coins;
+  user.xp += contents.xp;
+  
+  contents.items.forEach(item => {
+    user.inventory.items.push(item);
+  });
+  
+  // Level up check
+  while (user.xp >= user.level * 100) {
+    user.xp -= user.level * 100;
+    user.level++;
+  }
+  
+  // Remove chest from inventory
+  user.chests.splice(chestIndex, 1);
+  
+  res.json({ success: true, contents, user });
+});
+
+app.post('/api/user/:id/dungeon/:tier/toggle-scavenge', (req, res) => {
+  const user = users[req.params.id];
+  const session = combatSessions[req.params.id];
+  
+  if (!user || !session) return res.status(404).json({ error: 'User or session not found' });
+  
+  session.scavenging = !session.scavenging;
+  
+  // Clear previous scavenged loot when toggling
+  if (session.scavenging) {
+    user.scavengedLoot = [];
+  }
+  
+  res.json({ scavenging: session.scavenging, session });
+});
+
+app.post('/api/user/:id/scavenged-loot/collect', (req, res) => {
+  const user = users[req.params.id];
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  
+  let totalCoins = 0;
+  let totalXp = 0;
+  const items = [];
+  
+  user.scavengedLoot.forEach(loot => {
+    totalCoins += loot.coins;
+    totalXp += loot.xp;
+    if (loot.item) {
+      items.push(loot.item);
+      user.inventory.items.push(loot.item);
+    }
+  });
+  
+  user.coins += totalCoins;
+  user.xp += totalXp;
+  
+  // Level up check
+  while (user.xp >= user.level * 100) {
+    user.xp -= user.level * 100;
+    user.level++;
+  }
+  
+  const collectedLoot = [...user.scavengedLoot];
+  user.scavengedLoot = [];
+  
+  res.json({ success: true, collectedLoot, totalCoins, totalXp, items, user });
 });
 
 app.listen(3000, () => console.log('Solo Ascent running on http://localhost:3000'));
