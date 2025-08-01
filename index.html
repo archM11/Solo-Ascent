@@ -371,6 +371,86 @@
             color: #ffffff;
         }
         
+        .rewards-content {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .reward-item {
+            background: #2a2a2a;
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .reward-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        /* Summons Page Layout */
+        .summons-section {
+            border: 2px solid #00ffff;
+            margin: 10px 0;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section-title {
+            background: #1a1a1a;
+            color: #00ffff;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+            border-bottom: 1px solid #00ffff;
+        }
+        
+        .party-grid {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            flex-wrap: wrap;
+            min-height: 80px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .party-member {
+            background: #2a2a2a;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            min-width: 120px;
+            position: relative;
+        }
+        
+        .party-member-name {
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .party-member-stats {
+            color: #ffffff;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+        
+        .info-content {
+            padding: 15px;
+            background: #1a1a1a;
+        }
+        
+        .info-content p {
+            margin: 8px 0;
+            color: #ffffff;
+            font-size: 0.9em;
+        }
+        
         /* In-Game Notification System */
         .notification-container {
             position: fixed;
@@ -647,18 +727,19 @@
             </div>
 
             <div class="tasks">
-                <h2 style="color: #00ffff; margin-bottom: 15px;">📋 DAILY TASKS</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="color: #00ffff; margin: 0;">📋 DAILY TASKS</h2>
+                    <div id="resetTimer" style="color: #ffaa00; font-size: 0.9em; text-align: right;">
+                        <div>Next reset in:</div>
+                        <div id="countdownText">--:--:--</div>
+                    </div>
+                </div>
                 <div id="taskList"></div>
                 <button id="claimBtn" class="btn" onclick="claimRewards()" style="width: 100%; background: linear-gradient(45deg, #00ffff, #ffffff); border-color: #00ffff; color: #000000; display: none;">🎁 CLAIM ALL REWARDS</button>
             </div>
 
             <button class="btn dungeons-btn" onclick="showScreen('dungeons')" style="width: 100%;">⚔️ ENTER DUNGEONS</button>
             
-            <div id="scavengeInfo" class="card" style="display: none; margin: 10px 0;">
-                <h3>🔍 Scavenge Mode</h3>
-                <p>Collect loot from each monster defeated. Get all scavenged loot when completing or running from dungeon.</p>
-                <div id="scavengedLootSummary" style="margin-top: 10px;"></div>
-            </div>
 
             <div class="stats-grid">
                 <div class="stat"><div class="stat-name">STR</div><div class="stat-value" id="strValue">1</div><button class="btn" onclick="assignStat('str')">+</button></div>
@@ -712,7 +793,6 @@
                     <button class="btn" id="attackBtn" onclick="attack()">⚔️ ATTACK</button>
                     <button class="btn" id="itemBtn" onclick="showCombatItems()">🧪 ITEM</button>
                     <button class="btn" id="runBtn" onclick="runAway()">🏃 RUN</button>
-                    <button class="btn" id="scavengeBtn" onclick="toggleScavenge()">🔍 SCAVENGE</button>
                 </div>
             </div>
         </div>
@@ -884,16 +964,30 @@
         <!-- Summoning Screen -->
         <div id="summoning" class="screen">
             <button class="btn" onclick="showScreen('home')">🏠 Home</button>
-            <div class="header"><h1>👥 PARTY MANAGEMENT</h1></div>
             
-            <div class="card">
-                <h3>Captured Bosses</h3>
+            <!-- Summons Party Section -->
+            <div class="summons-section">
+                <div class="section-title">SUMMONS PARTY</div>
+                <div id="activeParty" class="party-grid">
+                    <!-- Active party members will appear here -->
+                </div>
+            </div>
+            
+            <!-- Current UI for Dungeon Storage Section -->
+            <div class="summons-section">
+                <div class="section-title">CURRENT UI FOR DUNGEON STORAGE</div>
                 <div id="bossGrid" class="grid grid-2"></div>
-                <p style="text-align: center; color: #ffffff; margin-top: 15px;">
-                    Capture bosses by defeating dungeon final bosses!<br>
-                    Add up to 3 bosses to your party - they'll tank damage and attack with you!<br>
-                    Success rate: 5% + INT * 2%
-                </p>
+            </div>
+            
+            <!-- Info Section -->
+            <div class="summons-section">
+                <div class="section-title">INFO</div>
+                <div class="info-content">
+                    <p>🎯 Capture bosses by defeating dungeon final bosses!</p>
+                    <p>⚔️ Add up to 3 bosses to your party - they'll fight alongside you!</p>
+                    <p>📊 Success rate: 5% + INT × 2%</p>
+                    <p>💪 Party members deal damage and can tank hits for you!</p>
+                </div>
             </div>
         </div>
         
@@ -922,14 +1016,6 @@
             </div>
             
             <div id="chestsGrid" class="grid grid-2"></div>
-            
-            <div class="card" style="margin-top: 20px;">
-                <h3>📊 Chest Opening Times</h3>
-                <div class="difficulty-info">
-                    <p>📦 Wooden: 1 hour | 🗳️ Iron: 2 hours | 💼 Silver: 4 hours</p>
-                    <p>🎁 Golden: 8 hours | 💎 Platinum: 12 hours | 🏆 Legendary: 24 hours</p>
-                </div>
-            </div>
         </div>
         <!-- Settings Screen -->
         <div id="settings" class="screen">
@@ -1038,6 +1124,41 @@
                 <div class="modal-buttons">
                     <button class="modal-btn cancel" onclick="closeMissionModal()">Cancel</button>
                     <button class="modal-btn confirm" onclick="confirmMission()">Send Mission</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rewards Popup Modal -->
+        <div id="rewardsModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-title">🎉 REWARDS EARNED!</div>
+                
+                <div id="rewardsModalContent" class="rewards-content">
+                    <!-- Rewards will be populated here -->
+                </div>
+                
+                <div class="modal-buttons">
+                    <button class="modal-btn confirm" id="claimRewardsModalBtn" onclick="claimModalRewards()">📦 CLAIM REWARDS</button>
+                    <button class="modal-btn cancel" onclick="closeRewardsModal()">❌ CLOSE</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Run Away Confirmation Modal -->
+        <div id="runAwayModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-title">🏃 Run Away from Dungeon?</div>
+                
+                <div id="runAwayContent" class="rewards-content">
+                    <p>Are you sure you want to flee from this dungeon?</p>
+                    <div id="runAwayRewards">
+                        <!-- Items from killed monsters will be shown here -->
+                    </div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button class="modal-btn confirm" onclick="confirmRunAway()">🏃 YES, RUN AWAY</button>
+                    <button class="modal-btn cancel" onclick="cancelRunAway()">⚔️ KEEP FIGHTING</button>
                 </div>
             </div>
         </div>
@@ -1268,8 +1389,30 @@
             // Update tasks
             updateTasks();
             
+            // Update countdown timer
+            updateCountdownTimer();
+            
             // Update boss grid
             updateBossGrid();
+        };
+
+        const updateCountdownTimer = () => {
+            if (!currentUser || !currentUser.nextResetTime) return;
+            
+            const now = Date.now();
+            const timeUntilReset = currentUser.nextResetTime - now;
+            
+            if (timeUntilReset <= 0) {
+                document.getElementById('countdownText').textContent = '00:00:00';
+                return;
+            }
+            
+            const hours = Math.floor(timeUntilReset / (1000 * 60 * 60));
+            const minutes = Math.floor((timeUntilReset % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeUntilReset % (1000 * 60)) / 1000);
+            
+            const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('countdownText').textContent = formattedTime;
         };
 
         const updateTasks = () => {
@@ -1322,10 +1465,7 @@
                     updateUI();
                     showNotification('Task completed! ✨', 'success', 2000);
                     
-                    // Check if all tasks completed - show reward screen
-                    if (currentUser.dailyTasks.completed.length === 5) {
-                        setTimeout(() => showDailyTaskRewardScreen(), 1000);
-                    }
+                    // Don't auto-show rewards - user must click claim button
                 } else {
                     showNotification('Failed to complete task', 'error');
                 }
@@ -1336,11 +1476,44 @@
         };
 
         const claimRewards = async () => {
+            showDailyTaskRewardsModal();
+        };
+        
+        const showDailyTaskRewardsModal = () => {
+            const modalContent = document.getElementById('rewardsModalContent');
+            modalContent.innerHTML = `
+                <div class="reward-item">
+                    <div class="reward-icon">🎉</div>
+                    <h3>All Daily Tasks Complete!</h3>
+                    <p>Great job finishing all your daily tasks!</p>
+                    <p><strong>Rewards:</strong></p>
+                    <p>💰 50 Coins</p>
+                    <p>⭐ 100 XP</p>
+                    <p>📦 Treasure Chest</p>
+                </div>
+            `;
+            
+            document.getElementById('rewardsModal').style.display = 'flex';
+        };
+        
+        const claimModalRewards = async () => {
             const result = await request(`/user/${currentUser.id}/tasks/claim`, { method: 'POST' });
             currentUser = result.user || result;
             updateUI();
-            showNotification('Claimed 100 XP and 50 coins!', 'success');
+            showNotification('Claimed 100 XP, 50 coins, and a treasure chest!', 'success');
+            closeRewardsModal();
         };
+        
+        const closeRewardsModal = () => {
+            document.getElementById('rewardsModal').style.display = 'none';
+        };
+        
+        // Close modal when clicking outside of it
+        document.getElementById('rewardsModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('rewardsModal')) {
+                closeRewardsModal();
+            }
+        });
 
         const assignStat = async (stat) => {
             if (currentUser.unspentPoints <= 0) return;
@@ -1468,7 +1641,7 @@
                     hideDamageLog();
                     console.log('Boss delay complete, showing rewards screen');
                     // Show dungeon reward screen before capture screen
-                    if (result.dungeonChest || result.scavengeChest) {
+                    if (result.dungeonChest) {
                         showDungeonRewardScreen(result);
                     } else {
                         showCaptureScreen(result);
@@ -1479,7 +1652,7 @@
             
             if (result.showingDamage) {
                 console.log('Showing damage log with damage:', result.damageDealt);
-                showDamageLog(result.damageDealt);
+                showDamageLog(result.damageDealt, result.partyAttacks);
                 currentCombat = result;
                 updateCombat();
                 
@@ -1510,9 +1683,18 @@
             proceedAfterDamage(result);
         };
 
-        const showDamageLog = (damage) => {
-            console.log('showDamageLog called with damage:', damage);
-            document.getElementById('damageLogAmount').textContent = damage;
+        const showDamageLog = (damage, partyAttacks = []) => {
+            console.log('showDamageLog called with damage:', damage, 'partyAttacks:', partyAttacks);
+            
+            let damageHtml = `${damage}`;
+            if (partyAttacks && partyAttacks.length > 0) {
+                const partyDamageHtml = partyAttacks.map(attack => 
+                    `<span style="color: #00ff00; font-size: 0.8em;">${attack.name}: ${attack.damage}</span>`
+                ).join('<br>');
+                damageHtml += `<br><div style="margin-top: 3px;">${partyDamageHtml}</div>`;
+            }
+            
+            document.getElementById('damageLogAmount').innerHTML = damageHtml;
             document.getElementById('damageLog').style.display = 'flex';
             console.log('Damage log display set to flex');
         };
@@ -1543,7 +1725,7 @@
                 setTimeout(() => {
                     console.log('Boss delay complete, showing rewards screen');
                     // Show dungeon reward screen before capture screen
-                    if (result.dungeonChest || result.scavengeChest) {
+                    if (result.dungeonChest) {
                         showDungeonRewardScreen(result);
                     } else {
                         showCaptureScreen(result);
@@ -1722,12 +1904,55 @@
             }
         };
         const runAway = async () => { 
-            // Collect any scavenged loot before leaving
-            if (currentUser && currentUser.scavengedLoot && currentUser.scavengedLoot.length > 0) {
-                await collectScavengedLoot();
+            showRunAwayModal();
+        };
+        
+        const showRunAwayModal = async () => {
+            if (!currentCombat) return;
+            
+            // Get the current combat session to see monsters killed
+            const result = await request(`/user/${currentUser.id}/dungeon/${currentCombat.tier}/status`);
+            const monstersKilled = result.monstersKilled || 0;
+            
+            const runAwayRewards = document.getElementById('runAwayRewards');
+            if (monstersKilled > 0) {
+                runAwayRewards.innerHTML = `
+                    <div class="reward-item">
+                        <div class="reward-icon">⚔️</div>
+                        <h4>Items from ${monstersKilled} monsters killed:</h4>
+                        <p>You'll receive loot for each monster you defeated</p>
+                    </div>
+                `;
+            } else {
+                runAwayRewards.innerHTML = `
+                    <div class="reward-item">
+                        <div class="reward-icon">😔</div>
+                        <p>No monsters killed yet - you won't get any loot</p>
+                    </div>
+                `;
             }
+            
+            document.getElementById('runAwayModal').style.display = 'flex';
+        };
+        
+        const confirmRunAway = async () => {
+            const result = await request(`/user/${currentUser.id}/dungeon/${currentCombat.tier}/run-away`, { method: 'POST' });
+            currentUser = result.user || result;
+            updateUI();
+            
+            if (result.items && result.items.length > 0) {
+                showNotification(`Escaped with ${result.items.length} items from defeated monsters!`, 'success', 3000);
+            } else {
+                showNotification('Escaped safely with no loot', 'info', 2000);
+            }
+            
+            document.getElementById('runAwayModal').style.display = 'none';
             showScreen('dungeons'); 
             currentCombat = null; 
+        };
+        
+        const cancelRunAway = () => {
+            document.getElementById('runAwayModal').style.display = 'none';
         };
 
         let captureResultData = null;
@@ -2279,9 +2504,39 @@
             }
         };
 
+        const updateActiveParty = () => {
+            const activeParty = document.getElementById('activeParty');
+            activeParty.innerHTML = '';
+            
+            if (currentUser.party.length === 0) {
+                activeParty.innerHTML = '<p style="color: #666; text-align: center; margin: 20px;">No party members active</p>';
+                return;
+            }
+            
+            currentUser.party.forEach(partyMember => {
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'party-member';
+                const statusColor = partyMember.isAlive ? '#00ff00' : '#ff4444';
+                const status = partyMember.isAlive ? 'ALIVE' : 'KO';
+                
+                memberDiv.innerHTML = `
+                    <div class="party-member-name">${partyMember.name}</div>
+                    <div class="party-member-stats">
+                        ATK: ${partyMember.attack} | HP: ${partyMember.hp}/${partyMember.maxHp}
+                    </div>
+                    <div style="color: ${statusColor}; font-size: 0.7em; font-weight: bold; margin-top: 3px;">${status}</div>
+                    <button class="btn" onclick="removeFromParty('${partyMember.id}')" style="background: #ff4444; color: #ffffff; margin-top: 8px; font-size: 0.8em;">Remove</button>
+                `;
+                activeParty.appendChild(memberDiv);
+            });
+        };
+
         const updateBossGrid = () => {
             const bossGrid = document.getElementById('bossGrid');
             bossGrid.innerHTML = '';
+            
+            // Update active party display as well
+            updateActiveParty();
             
             currentUser.capturedBosses.forEach(boss => {
                 const bossCard = document.createElement('div');
@@ -2322,17 +2577,19 @@
 
         // Chest management functions
         const loadChests = async () => {
-            const chestsData = await request(`/user/${currentUser.id}/chests`);
-            const chestsGrid = document.getElementById('chestsGrid');
-            
-            chestsGrid.innerHTML = '';
-            
-            if (chestsData.chests.length === 0) {
-                chestsGrid.innerHTML = '<div class="card" style="grid-column: 1 / -1;"><h3>No chests available</h3><p>Complete daily tasks and dungeons to earn chests!</p></div>';
-                return;
-            }
-            
-            chestsData.chests.forEach(chest => {
+            try {
+                const chestsData = await request(`/user/${currentUser.id}/chests`);
+                const chestsGrid = document.getElementById('chestsGrid');
+                
+                chestsGrid.innerHTML = '';
+                
+                // Check if chestsData exists and has chests property
+                if (!chestsData || !chestsData.chests || chestsData.chests.length === 0) {
+                    chestsGrid.innerHTML = '<div class="card" style="grid-column: 1 / -1;"><h3>No chests available</h3><p>Complete daily tasks and dungeons to earn chests!</p></div>';
+                    return;
+                }
+                
+                chestsData.chests.forEach(chest => {
                 const chestCard = document.createElement('div');
                 chestCard.className = 'chest-card';
                 
@@ -2372,7 +2629,12 @@
                 `;
                 
                 chestsGrid.appendChild(chestCard);
-            });
+                });
+            } catch (error) {
+                console.error('Error loading chests:', error);
+                const chestsGrid = document.getElementById('chestsGrid');
+                chestsGrid.innerHTML = '<div class="card" style="grid-column: 1 / -1;"><h3>Error loading chests</h3><p>Please try again later.</p></div>';
+            }
         };
         
         const handleChest = async (chestId) => {
@@ -2403,8 +2665,8 @@
         
         const showDungeonRewardScreen = (result) => {
             currentRewardData = result;
-            const container = document.getElementById('rewardsContainer');
-            container.innerHTML = '';
+            const modalContent = document.getElementById('rewardsModalContent');
+            modalContent.innerHTML = '';
             
             // Show dungeon chest
             if (result.dungeonChest) {
@@ -2416,21 +2678,9 @@
                     <p>From: Dungeon Clear</p>
                     <p style="color: #00ff00;">Opens instantly!</p>
                 `;
-                container.appendChild(chestDiv);
+                modalContent.appendChild(chestDiv);
             }
             
-            // Show scavenge chest if any
-            if (result.scavengeChest) {
-                const chestDiv = document.createElement('div');
-                chestDiv.className = 'reward-item';
-                chestDiv.innerHTML = `
-                    <div class="reward-icon">${result.scavengeChest.icon}</div>
-                    <h3 class="rarity-${result.scavengeChest.tier}">${result.scavengeChest.name}</h3>
-                    <p>From: Scavenged Loot</p>
-                    <p style="color: #ffaa00;">Opens in ${result.scavengeChest.openTimeHours}h</p>
-                `;
-                container.appendChild(chestDiv);
-            }
             
             // Show basic rewards
             const rewardsDiv = document.createElement('div');
@@ -2441,37 +2691,19 @@
                 <p>💰 ${result.rewards.coins} Coins</p>
                 <p>⭐ ${result.rewards.xp} XP</p>
             `;
-            container.appendChild(rewardsDiv);
+            modalContent.appendChild(rewardsDiv);
             
-            document.getElementById('claimRewardsBtn').onclick = () => claimDungeonRewards();
-            showScreen('rewards');
+            document.getElementById('claimRewardsModalBtn').onclick = () => claimDungeonRewards();
+            document.getElementById('rewardsModal').style.display = 'flex';
         };
         
-        const showDailyTaskRewardScreen = () => {
-            const container = document.getElementById('rewardsContainer');
-            container.innerHTML = '';
-            
-            const rewardsDiv = document.createElement('div');
-            rewardsDiv.className = 'reward-item';
-            rewardsDiv.innerHTML = `
-                <div class="reward-icon">🎉</div>
-                <h3>All Daily Tasks Complete!</h3>
-                <p>Great job finishing all your daily tasks!</p>
-                <p>Claim your rewards to get a chest and bonuses!</p>
-            `;
-            container.appendChild(rewardsDiv);
-            
-            document.getElementById('claimRewardsBtn').onclick = () => claimDailyRewards();
-            showScreen('rewards');
-        };
         
         const claimDungeonRewards = () => {
             showNotification('Dungeon rewards claimed!', 'success');
+            closeRewardsModal();
             
             if (currentRewardData.captured !== undefined) {
                 showCaptureScreen(currentRewardData);
-            } else {
-                showScreen('dungeons');
             }
         };
         
@@ -2483,38 +2715,6 @@
             showScreen('home');
         };
         
-        // Simple scavenge functions  
-        const toggleScavenge = async () => {
-            if (!currentCombat) {
-                showNotification('No active combat session', 'warning');
-                return;
-            }
-            
-            const result = await request(`/user/${currentUser.id}/dungeon/${currentCombat.tier}/toggle-scavenge`, { method: 'POST' });
-            currentCombat = result.session;
-            
-            const btn = document.getElementById('scavengeBtn');
-            if (result.scavenging) {
-                btn.textContent = '🔍 SCAVENGING';
-                btn.style.background = '#00ff00';
-                showNotification('Scavenging enabled!', 'success');
-            } else {
-                btn.textContent = '🔍 SCAVENGE';
-                btn.style.background = '';
-                showNotification('Scavenging disabled', 'info');
-            }
-        };
-        
-        const collectScavengedLoot = async () => {
-            if (!currentUser.scavengedLoot || currentUser.scavengedLoot.length === 0) return;
-            
-            const result = await request(`/user/${currentUser.id}/scavenged-loot/collect`, { method: 'POST' });
-            if (result.success) {
-                currentUser = result.user;
-                updateUI();
-                showNotification(`Collected ${result.totalCoins} coins, ${result.totalXp} XP, and ${result.items.length} items!`, 'success');
-            }
-        };
         
         // Auto-refresh user data
         setInterval(async () => {
@@ -2532,6 +2732,13 @@
                 }
             }
         }, 30000);
+        
+        // Update countdown timer every second
+        setInterval(() => {
+            if (currentUser) {
+                updateCountdownTimer();
+            }
+        }, 1000);
 
         // Update boss grid timers more frequently
         setInterval(() => {

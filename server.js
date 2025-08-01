@@ -52,12 +52,13 @@ const createUser = (nickname, preferences = null) => {
     id: uuidv4(), nickname, level: 1, xp: 0, hp: 100, maxHp: 100, coins: 1000,
     stats: { str: 20, agi: 20, vit: 20, int: 20, per: 20 }, unspentPoints: 0,
     inventory: { equipped: { weapon: null, armor: [null,null,null,null], accessories: [null,null,null,null] }, items: starterItems },
-    dailyTasks: { tasks: dailyTasks, completed: [], lastClaimed: 0, lastReset: 0 },
+    dailyTasks: { tasks: dailyTasks, completed: [], lastClaimed: 0, lastReset: Date.now() },
     dungeonProgress: { completedToday: [], totalClears: {E:0,D:0,C:0,B:0,A:0,S:0}, lastReset: 0 },
     shopState: { items: [], purchased: [], lastRefresh: 0 }, playlist: [],
     friends: [], capturedBosses: [], party: [],
     preferences: userPrefs,
-    hasSetPreferences: preferences !== null
+    hasSetPreferences: preferences !== null,
+    nextResetTime: getNext4AM().getTime()
   };
 };
 
@@ -125,7 +126,7 @@ const generateDailyTasks = (preferences) => {
     return [
       '🛌 Rest Day: Take it easy today',
       '🚶 Light walk (15-20 minutes)',
-      '🧘 Gentle stretching or meditation',
+      '🤸 Gentle neck turns x8 (each direction)',
       '🥤 Stay hydrated - drink plenty of water',
       '😴 Get quality sleep tonight'
     ];
@@ -150,17 +151,41 @@ const generateDailyTasks = (preferences) => {
   
   // Add stretching if enabled
   if (preferences.dailyGoals.stretching) {
-    tasks.push('🤸 Complete 10-minute stretching routine');
+    const stretchingTasks = [
+      '🤸 Touch your toes x10',
+      '🤸 Arm stretches overhead x15',
+      '🤸 Side bends x10 (each side)',
+      '🤸 Shoulder shrugs x15',
+      '🤸 Ankle rolls x10 (each foot)',
+      '🤸 Simple back stretches x10',
+      '🤸 Gentle neck turns x8 (each direction)',
+      '🤸 Basic leg stretches x30 seconds'
+    ];
+    const randomStretch = stretchingTasks[Math.floor(Math.random() * stretchingTasks.length)];
+    tasks.push(randomStretch);
   }
   
   // Add workout-specific tasks based on split and level
   const workoutTasks = getWorkoutTasks(preferences);
   tasks.push(...workoutTasks);
   
-  // Ensure we have exactly 5 tasks
+  // Ensure we have exactly 5 tasks with specific exercises and counts
   while (tasks.length < 5) {
-    const genericTasks = ['💪 Complete bonus workout', '🏃 Do light cardio (10 min)', '🍎 Eat a healthy meal'];
-    const randomTask = genericTasks[Math.floor(Math.random() * genericTasks.length)];
+    const specificTasks = [
+      '💪 Push-ups x15',
+      '🦵 Squats x20',
+      '🤸 Planks x30 seconds',
+      '🏃 Jumping jacks x25',
+      '🔥 Burpees x8',
+      '🤸 Lunges x12 (each leg)',
+      '🦵 Calf raises x20',
+      '🤲 Wall push-ups x12',
+      '🧘 Deep breathing x10 breaths',
+      '🤸 Mountain climbers x20',
+      '🦵 Glute bridges x15',
+      '💪 Tricep dips x10'
+    ];
+    const randomTask = specificTasks[Math.floor(Math.random() * specificTasks.length)];
     if (!tasks.includes(randomTask)) {
       tasks.push(randomTask);
     }
@@ -177,33 +202,36 @@ const getWorkoutTasks = (preferences) => {
   
   if (workoutSplit === 'full-body') {
     if (preferredActivities.includes('bodyweight')) {
-      tasks.push(`💪 Push-ups (${Math.floor(10 * intensity)})`);
-      tasks.push(`🦵 Squats (${Math.floor(15 * intensity)})`);
+      tasks.push(`💪 Push-ups x${Math.floor(10 * intensity)}`);
+      tasks.push(`🦵 Squats x${Math.floor(15 * intensity)}`);
+      tasks.push(`🤸 Lunges x${Math.floor(12 * intensity)} (each leg)`);
     }
     if (preferredActivities.includes('cardio')) {
-      tasks.push(`🏃 Jumping Jacks (${Math.floor(20 * intensity)})`);
+      tasks.push(`🏃 Jumping Jacks x${Math.floor(20 * intensity)}`);
+      tasks.push(`🔥 Burpees x${Math.floor(5 * intensity)}`);
     }
   } else if (workoutSplit === 'upper-lower') {
     const isUpperDay = Math.random() > 0.5;
     if (isUpperDay) {
-      tasks.push(`💪 Upper body workout (${Math.floor(20 * intensity)} min)`);
-      if (preferredActivities.includes('bodyweight')) {
-        tasks.push(`🤲 Push-ups (${Math.floor(12 * intensity)})`);
-      }
+      tasks.push(`💪 Push-ups x${Math.floor(12 * intensity)}`);
+      tasks.push(`🤲 Pike push-ups x${Math.floor(8 * intensity)}`);
+      tasks.push(`🤸 Tricep dips x${Math.floor(10 * intensity)}`);
     } else {
-      tasks.push(`🦵 Lower body workout (${Math.floor(20 * intensity)} min)`);
-      if (preferredActivities.includes('bodyweight')) {
-        tasks.push(`🦵 Squats (${Math.floor(18 * intensity)})`);
-      }
+      tasks.push(`🦵 Squats x${Math.floor(18 * intensity)}`);
+      tasks.push(`🤸 Lunges x${Math.floor(14 * intensity)} (each leg)`);
+      tasks.push(`🦵 Calf raises x${Math.floor(20 * intensity)}`);
     }
   } else if (workoutSplit === 'push-pull') {
     const dayType = ['push', 'pull', 'legs'][Math.floor(Math.random() * 3)];
     if (dayType === 'push') {
-      tasks.push(`💪 Push workout (${Math.floor(25 * intensity)} min)`);
+      tasks.push(`💪 Push-ups x${Math.floor(15 * intensity)}`);
+      tasks.push(`🤸 Tricep dips x${Math.floor(10 * intensity)}`);
     } else if (dayType === 'pull') {
-      tasks.push(`🤲 Pull workout (${Math.floor(25 * intensity)} min)`);
+      tasks.push(`🤲 Pull-ups/Assisted pull-ups x${Math.floor(8 * intensity)}`);
+      tasks.push(`🤸 Superman holds x${Math.floor(12 * intensity)}`);
     } else {
-      tasks.push(`🦵 Leg workout (${Math.floor(25 * intensity)} min)`);
+      tasks.push(`🦵 Squats x${Math.floor(20 * intensity)}`);
+      tasks.push(`🤸 Lunges x${Math.floor(16 * intensity)} (each leg)`);
     }
   }
   
@@ -369,12 +397,39 @@ const isRestDay = (preferences) => {
 };
 
 // Utility functions
+const getNext4AM = () => {
+  const now = new Date();
+  const next4AM = new Date(now);
+  next4AM.setHours(4, 0, 0, 0);
+  
+  // If it's already past 4 AM today, set for tomorrow's 4 AM
+  if (now.getHours() >= 4) {
+    next4AM.setDate(next4AM.getDate() + 1);
+  }
+  
+  return next4AM;
+};
+
+const getLastValidReset = () => {
+  const now = new Date();
+  const last4AM = new Date(now);
+  last4AM.setHours(4, 0, 0, 0);
+  
+  // If it's before 4 AM today, use yesterday's 4 AM
+  if (now.getHours() < 4) {
+    last4AM.setDate(last4AM.getDate() - 1);
+  }
+  
+  return last4AM;
+};
+
 const checkDailyReset = (user) => {
   const now = Date.now();
-  const today = new Date(now).toDateString();
-  const lastReset = new Date(user.dailyTasks.lastReset).toDateString();
+  const lastValidReset = getLastValidReset().getTime();
   
-  if (today !== lastReset) {
+  // Only reset if user's last reset was before the most recent 4 AM
+  if (!user.dailyTasks.lastReset || user.dailyTasks.lastReset < lastValidReset) {
+    user.dailyTasks.tasks = generateDailyTasks(user.preferences);
     user.dailyTasks.completed = [];
     user.dailyTasks.lastClaimed = 0;
     user.dailyTasks.lastReset = now;
@@ -472,9 +527,11 @@ app.post('/api/user/:id/preferences', (req, res) => {
   user.preferences = { ...user.preferences, ...req.body };
   user.hasSetPreferences = true;
   
-  // Regenerate daily tasks based on new preferences
-  user.dailyTasks.tasks = generateDailyTasks(user.preferences);
-  user.dailyTasks.completed = []; // Reset completed tasks when preferences change
+  // Only regenerate tasks if this is the first time setting preferences
+  if (!user.dailyTasks.tasks || user.dailyTasks.tasks.length === 0) {
+    user.dailyTasks.tasks = generateDailyTasks(user.preferences);
+    user.dailyTasks.completed = [];
+  }
   
   res.json(user);
 });
@@ -483,6 +540,9 @@ app.get('/api/user/:id', (req, res) => {
   const user = users[req.params.id];
   if (!user) return res.status(404).json({ error: 'User not found' });
   checkDailyReset(user);
+  
+  // Add next reset time to response
+  user.nextResetTime = getNext4AM().getTime();
   
   // Calculate correct max HP based on VIT stat
   const stats = calculateStats(user);
@@ -521,6 +581,13 @@ app.post('/api/user/:id/tasks/claim', (req, res) => {
     user.xp += 100;
     user.coins += 50;
     user.dailyTasks.lastClaimed = now;
+    
+    // Generate a chest for completing daily tasks
+    const dailyChest = generateChest('D', 'Daily Tasks');
+    dailyChest.openTimeHours = 1; // Daily task chests take 1 hour to open
+    if (!user.chests) user.chests = [];
+    user.chests.push(dailyChest);
+    
     while (user.xp >= user.level * 100) {
       user.xp -= user.level * 100;
       user.level++;
@@ -561,8 +628,14 @@ app.post('/api/user/:id/dungeon/:tier/enter', (req, res) => {
   user.maxHp = 100 + (stats.vit - 20) * 5;
   user.hp = user.maxHp; // Reset to full HP when entering dungeon
   
+  // Reset party member HP and status when starting dungeon
+  user.party.forEach(member => {
+    member.hp = member.maxHp;
+    member.isAlive = true;
+  });
+  
   const enemy = createEnemy(tier, 0);
-  const session = { enemy, tier, enemyIndex: 0, turn: 'player', awaitingWorkout: false };
+  const session = { enemy, tier, enemyIndex: 0, turn: 'player', awaitingWorkout: false, monstersKilled: 0 };
   combatSessions[user.id] = session;
   res.json(session);
 });
@@ -703,13 +776,15 @@ app.post('/api/user/:id/combat/confirm-workout', (req, res) => {
           if (!user.chests) user.chests = [];
           user.chests.push(dungeonChest);
           
-          // Also check for scavenged loot chest if there's scavenged loot
-          let scavengeChest = null;
-          if (!user.scavengedLoot) user.scavengedLoot = [];
-          if (user.scavengedLoot.length > 0) {
-            scavengeChest = generateChest('E', 'scavenge');
-            if (!user.chests) user.chests = [];
-            user.chests.push(scavengeChest);
+          // Give items for each monster killed during dungeon
+          const monstersKilled = session.monstersKilled || 0;
+          const monsterKillItems = [];
+          for (let i = 0; i < monstersKilled; i++) {
+            const loot = generateMonsterLoot(session.tier, 'Monster');
+            if (loot && loot.item) {
+              monsterKillItems.push(loot.item);
+              user.inventory.items.push(loot.item);
+            }
           }
           
           delete combatSessions[user.id];
@@ -720,19 +795,14 @@ app.post('/api/user/:id/combat/confirm-workout', (req, res) => {
             boss: capturedBoss,
             itemDrops: itemDrops,
             dungeonChest: dungeonChest,
-            scavengeChest: scavengeChest,
-            scavengedLoot: user.scavengedLoot.length > 0 ? [...user.scavengedLoot] : null
+            monsterKillItems: monsterKillItems,
+            monstersKilled: monstersKilled
           });
         }
       } else {
-        // Generate monster loot if scavenging is enabled
-        if (session.scavenging) {
-          const loot = generateMonsterLoot(session.tier, session.enemy.name);
-          if (loot) {
-            if (!user.scavengedLoot) user.scavengedLoot = [];
-            user.scavengedLoot.push(loot);
-          }
-        }
+        // Track monsters killed
+        if (!session.monstersKilled) session.monstersKilled = 0;
+        session.monstersKilled++;
         
         // Don't spawn next enemy immediately - let client handle timing
         return res.json(session);
@@ -995,6 +1065,9 @@ app.get('/api/user/:id/chests', (req, res) => {
   const user = users[req.params.id];
   if (!user) return res.status(404).json({ error: 'User not found' });
   
+  // Initialize chests array if it doesn't exist
+  if (!user.chests) user.chests = [];
+  
   res.json({ chests: user.chests });
 });
 
@@ -1057,52 +1130,36 @@ app.post('/api/user/:id/chest/:chestId/open', (req, res) => {
   res.json({ success: true, contents, user });
 });
 
-app.post('/api/user/:id/dungeon/:tier/toggle-scavenge', (req, res) => {
+// Add status endpoint to check monsters killed
+app.get('/api/user/:id/dungeon/:tier/status', (req, res) => {
+  const session = combatSessions[req.params.id];
+  if (!session) return res.json({ monstersKilled: 0 });
+  res.json({ monstersKilled: session.monstersKilled || 0 });
+});
+
+// Add run away endpoint that gives items for monsters killed
+app.post('/api/user/:id/dungeon/:tier/run-away', (req, res) => {
   const user = users[req.params.id];
   const session = combatSessions[req.params.id];
   
   if (!user || !session) return res.status(404).json({ error: 'User or session not found' });
   
-  session.scavenging = !session.scavenging;
-  
-  // Clear previous scavenged loot when toggling
-  if (session.scavenging) {
-    user.scavengedLoot = [];
-  }
-  
-  res.json({ scavenging: session.scavenging, session });
-});
-
-app.post('/api/user/:id/scavenged-loot/collect', (req, res) => {
-  const user = users[req.params.id];
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  
-  let totalCoins = 0;
-  let totalXp = 0;
+  const monstersKilled = session.monstersKilled || 0;
   const items = [];
   
-  user.scavengedLoot.forEach(loot => {
-    totalCoins += loot.coins;
-    totalXp += loot.xp;
-    if (loot.item) {
+  // Give one item for each monster killed
+  for (let i = 0; i < monstersKilled; i++) {
+    const loot = generateMonsterLoot(session.tier, 'Monster');
+    if (loot && loot.item) {
       items.push(loot.item);
       user.inventory.items.push(loot.item);
     }
-  });
-  
-  user.coins += totalCoins;
-  user.xp += totalXp;
-  
-  // Level up check
-  while (user.xp >= user.level * 100) {
-    user.xp -= user.level * 100;
-    user.level++;
   }
   
-  const collectedLoot = [...user.scavengedLoot];
-  user.scavengedLoot = [];
+  // Clean up session
+  delete combatSessions[user.id];
   
-  res.json({ success: true, collectedLoot, totalCoins, totalXp, items, user });
+  res.json({ success: true, items, user });
 });
 
 app.listen(3000, () => console.log('Solo Ascent running on http://localhost:3000'));
