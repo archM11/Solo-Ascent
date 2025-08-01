@@ -248,10 +248,60 @@
             margin: 10px 0;
         }
         
+        .chest-sprite {
+            width: 128px;
+            height: 128px;
+            margin: 10px auto;
+            image-rendering: pixelated;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .chest-sprite:hover {
+            transform: scale(1.1);
+        }
+        
         .chest-timer {
             color: #ffaa00;
             font-weight: bold;
             margin: 5px 0;
+            font-size: 1.2em;
+        }
+        
+        .confirmation-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1a1a;
+            border: 2px solid #00ffff;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+        
+        .confirmation-modal h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+        }
+        
+        .confirmation-modal .timer-display {
+            font-size: 2em;
+            color: #ffaa00;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
         }
         
         .reward-item {
@@ -1235,6 +1285,182 @@
             if (screenName === 'settings') loadSettings();
             if (screenName === 'summoning') loadSummoning();
             if (screenName === 'chests') loadChests();
+        };
+
+        // Chest sprite data - pixel art converted to base64
+        const getChestSprites = () => {
+            return {
+                closed: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAxlSURBVHic7d1Ncxw3EoDhJkVTlmxLsh3F9v//Y3GceClbsmzLlEiJHz0wGM5wOAP0dA8Wrz5PxEVsd6YB7O6qQmM+m80m94S1trYOz3g8Xkt7Xfv1wuVfr/V6Yev1Wq+vt1+3/X5dPWet7QAAzsRnn312/qMf/ejMJ95/eBr19RpgZ2eH6AMAOBsAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkAQAAJAEAACQBAAAkMTOQ7/AXq9XXbt2rbJr167t9nd3d6u9vb3K1O3vd4sWLdrSV0j+VfNwCGhKgr/1fLr3Rv3tdv/DddZ5X6jz/qkxwv66XrfHnvWaa5//rPMtV2zb9W1c577fvmGvG/HaUe93Wm9b3u/U8bbP1/bcHQ5yG/W+tJ6v3xkCQP7+J/UfqfOj/o96f9xJ9rv2v1nHj/L3+/w8f7+fv9/P3+/n7/e7a7/e9rmh19vunrr2cW+7f6z3Db1u6Pe1fe9p97f9O9rkPNf+rLOi93F/f39tUJpzT/E/rf7X6+sb/v/Rr//eeJ6x/6+hMQauz5u5NjfutYNUHaf+Zsu/H1m5h7Exa5ztu7H61rbHKZXveL229Zr23q79ebr263aXfez32x7fb3t+5HvbXjfv9TrPt35f1+v2m/3d9rv/Vfvdc+33f9fVec8v8/f7+fv9/v3iZzb9vGfOdcPNk7N9d+sav19e5w/F9z7r+/1+Y+XLdR3Lz9N5++5RV9jdWF2p7lxeqzbe/1Zdu/7tbe6gvXNJdd0eU7f79HuN88ba/fK4u4m0O1zVJeJ3b5+ubt66VV27dq3a2dlZzJ+6tLRUV9j97etVKLjlXL7vVf5OdV/hH9fVHav76tO979f1HuMX9fk=',
+                opening: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAxlSUVORK5CYII=',
+                ready: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAxlSUVORK5CYII='
+            };
+        };
+
+        const createChestSprite = (type) => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            
+            // Disable anti-aliasing for pixel art
+            ctx.imageSmoothingEnabled = false;
+            
+            // Base colors based on your sprites
+            const brown = type === 'ready' ? '#D2B48C' : '#8B4513';
+            const darkBrown = '#654321';
+            const gold = '#FFD700';
+            const darkGold = '#B8860B';
+            const lockColor = type === 'ready' ? '#000000' : '#654321';
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, 128, 128);
+            
+            // Draw chest base (main body)
+            ctx.fillStyle = brown;
+            ctx.fillRect(16, 48, 96, 64);
+            
+            // Add wood texture lines
+            ctx.fillStyle = darkBrown;
+            for (let i = 0; i < 4; i++) {
+                ctx.fillRect(20, 56 + i * 12, 88, 2);
+            }
+            
+            // Draw chest lid
+            if (type === 'ready') {
+                // Open lid (tilted up)
+                ctx.fillStyle = brown;
+                ctx.fillRect(16, 16, 96, 32);
+                
+                // Interior glow effect
+                ctx.fillStyle = gold;
+                ctx.fillRect(20, 48, 88, 8);
+                
+                // Sparkle effects for open chest
+                ctx.fillStyle = gold;
+                ctx.fillRect(30, 20, 4, 4);
+                ctx.fillRect(70, 25, 4, 4);
+                ctx.fillRect(50, 18, 4, 4);
+            } else {
+                // Closed lid
+                ctx.fillStyle = brown;
+                ctx.fillRect(16, 32, 96, 32);
+            }
+            
+            // Draw metal reinforcement strips
+            const metalColor = type === 'opening' ? darkGold : (type === 'ready' ? gold : '#A0A0A0');
+            ctx.fillStyle = metalColor;
+            ctx.fillRect(12, 40, 104, 6);
+            ctx.fillRect(12, 72, 104, 6);
+            ctx.fillRect(12, 104, 104, 6);
+            
+            // Draw lock
+            ctx.fillStyle = lockColor;
+            ctx.fillRect(56, 56, 16, 20);
+            ctx.fillRect(60, 52, 8, 8);
+            
+            // Add keyhole
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(62, 62, 4, 6);
+            
+            // Draw corner reinforcements
+            ctx.fillStyle = darkBrown;
+            ctx.fillRect(12, 28, 8, 8);
+            ctx.fillRect(108, 28, 8, 8);
+            ctx.fillRect(12, 108, 8, 8);
+            ctx.fillRect(108, 108, 8, 8);
+            
+            // Add special effects based on state
+            if (type === 'opening') {
+                // Add glowing effect for opening chest
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+                ctx.fillRect(14, 30, 100, 84);
+            }
+            
+            return canvas.toDataURL();
+        };
+
+        // Show confirmation modal with timer
+        let confirmationTimer = null;
+        const showChestConfirmation = (chestId, timeInSeconds = 5) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            
+            const modal = document.createElement('div');
+            modal.className = 'confirmation-modal';
+            
+            let timeLeft = timeInSeconds;
+            
+            const updateModal = () => {
+                modal.innerHTML = `
+                    <h3>Open Chest?</h3>
+                    <div class="timer-display">${timeLeft}s</div>
+                    <p>Time remaining to confirm chest opening</p>
+                    <div style="margin-top: 15px;">
+                        <button class="btn" onclick="confirmChestOpen('${chestId}')">Open Now</button>
+                        <button class="btn" style="background: #ff4444;" onclick="cancelChestOpen()">Cancel</button>
+                    </div>
+                `;
+            };
+            
+            updateModal();
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(modal);
+            
+            // Store references for cleanup
+            window.currentConfirmationOverlay = overlay;
+            window.currentConfirmationModal = modal;
+            
+            confirmationTimer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(confirmationTimer);
+                    modal.innerHTML = `
+                        <h3 style="color: #ff4444;">Time's Up!</h3>
+                        <p>Chest opening cancelled</p>
+                        <button class="btn" onclick="cancelChestOpen()">Close</button>
+                    `;
+                    setTimeout(() => {
+                        cancelChestOpen();
+                    }, 2000);
+                } else {
+                    updateModal();
+                }
+            }, 1000);
+        };
+
+        const confirmChestOpen = async (chestId) => {
+            clearInterval(confirmationTimer);
+            cancelChestOpen();
+            
+            const chest = currentUser.chests?.find(c => c.id === chestId);
+            if (!chest) return;
+
+            if (chest.openTimeHours === 0 || (chest.isOpening && Date.now() - chest.startedOpening >= chest.openTimeHours * 60 * 60 * 1000)) {
+                const result = await request(`/user/${currentUser.id}/chest/${chestId}/open`, { method: 'POST' });
+                if (result.success) {
+                    showNotification(`Opened ${chest.name}! Got ${result.contents.coins} coins, ${result.contents.xp} XP, and ${result.contents.items.length} items!`, 'success', 4000);
+                    loadChests();
+                }
+            } else if (!chest.isOpening) {
+                const result = await request(`/user/${currentUser.id}/chest/${chestId}/start-opening`, { method: 'POST' });
+                if (result.success) {
+                    showNotification(`Started opening ${chest.name}. Come back in ${chest.openTimeHours} hour(s)!`, 'info');
+                    loadChests();
+                }
+            }
+        };
+
+        const cancelChestOpen = () => {
+            clearInterval(confirmationTimer);
+            if (window.currentConfirmationOverlay) {
+                document.body.removeChild(window.currentConfirmationOverlay);
+                window.currentConfirmationOverlay = null;
+            }
+            if (window.currentConfirmationModal) {
+                document.body.removeChild(window.currentConfirmationModal);
+                window.currentConfirmationModal = null;
+            }
         };
 
         // Authentication
@@ -2618,8 +2844,13 @@
                     timerText = `${chest.openTimeHours}h to open`;
                 }
                 
+                const chestSprites = getChestSprites();
+                const spriteType = canOpen && chest.isOpening ? 'ready' : chest.isOpening ? 'opening' : 'closed';
+                
                 chestCard.innerHTML = `
-                    <div class="chest-icon">${chest.icon}</div>
+                    <div class="chest-sprite" onclick="handleChest('${chest.id}')" style="display: flex; align-items: center; justify-content: center; font-size: 64px; background: linear-gradient(45deg, ${spriteType === 'ready' ? '#FFD700, #FFA500' : spriteType === 'opening' ? '#FFA500, #FF8C00' : '#8B4513, #654321'}); border-radius: 10px; cursor: pointer; transition: transform 0.2s;">
+                        ${spriteType === 'ready' ? '📦✨' : spriteType === 'opening' ? '📦⏳' : '📦🔒'}
+                    </div>
                     <h4 class="rarity-${chest.tier}">${chest.name}</h4>
                     <p>Source: ${chest.source}</p>
                     <div class="chest-timer">${timerText}</div>
@@ -2637,27 +2868,12 @@
             }
         };
         
-        const handleChest = async (chestId) => {
-            const chest = currentUser.chests.find(c => c.id === chestId);
+        const handleChest = (chestId) => {
+            const chest = currentUser.chests?.find(c => c.id === chestId);
             if (!chest) return;
             
-            if (chest.openTimeHours === 0 || (chest.isOpening && Date.now() - chest.startedOpening >= chest.openTimeHours * 60 * 60 * 1000)) {
-                // Open the chest
-                const result = await request(`/user/${currentUser.id}/chest/${chestId}/open`, { method: 'POST' });
-                if (result.success) {
-                    currentUser = result.user;
-                    updateUI();
-                    showNotification(`Opened ${chest.name}! Got ${result.contents.coins} coins, ${result.contents.xp} XP, and ${result.contents.items.length} items!`, 'success', 4000);
-                    loadChests();
-                }
-            } else if (!chest.isOpening) {
-                // Start opening the chest
-                const result = await request(`/user/${currentUser.id}/chest/${chestId}/start-opening`, { method: 'POST' });
-                if (result.success) {
-                    showNotification(`Started opening ${chest.name}. Come back in ${chest.openTimeHours} hour(s)!`, 'info');
-                    loadChests();
-                }
-            }
+            // Show confirmation modal with 5-second timer
+            showChestConfirmation(chestId, 5);
         };
         
         // Reward screen functions
