@@ -6,35 +6,215 @@
     <title>Solo Ascent</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #00ffff; overflow-x: hidden; }
-        .container { max-width: 100vw; margin: 0 auto; padding: 10px; }
+        body { 
+            font-family: 'Courier New', monospace; 
+            background: #0a0a0a; 
+            color: #00ffff; 
+            overflow-x: hidden;
+            font-size: 14px;
+            line-height: 1.4;
+            -webkit-user-select: none;
+            user-select: none;
+            width: 100vw;
+            max-width: 414px;
+            margin: 0 auto;
+        }
+        .container { 
+            max-width: 100vw; 
+            margin: 0 auto; 
+            padding: 8px;
+            width: 100%;
+        }
         .screen { display: none; min-height: 100vh; }
         .screen.active { display: block; }
-        .btn { background: linear-gradient(45deg, #2a2a2a, #1a1a1a); border: 2px solid #00ffff; color: #00ffff; padding: 10px 15px; margin: 5px; cursor: pointer; text-transform: uppercase; transition: all 0.3s; border-radius: 5px; }
-        .btn:hover { box-shadow: 0 0 20px #00ffff; transform: translateY(-2px); }
+        /* Apply background to all screens - optimized for mobile */
+        body {
+            background-image: url('newbg.png') !important; 
+            background-size: contain !important; 
+            background-position: center top !important; 
+            background-repeat: no-repeat !important; 
+            background-attachment: fixed !important;
+            max-width: 400px !important;
+            margin: 0 auto !important;
+        }
+        
+        /* Apply background to login and main game screens */
+        .screen.active {
+            background: rgba(10, 10, 10, 0.7) !important;
+            position: relative !important;
+            min-height: 100vh !important;
+            width: 100% !important;
+        }
+        
+        /* Mobile portrait optimization - rotate background for better fit */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .screen.active {
+                background-size: 150% auto !important;
+                background-position: center center !important;
+                background-attachment: scroll !important;
+            }
+        }
+        .screen.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+        .screen.active > * {
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Chest card styles */
+        .chest-card {
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .chest-card.ready {
+            border-color: #00ff00 !important;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+        
+        .chest-card.opening {
+            border-color: #ffaa00;
+        }
+        .btn { 
+            background: linear-gradient(45deg, #2a2a2a, #1a1a1a); 
+            border: 2px solid #00ffff; 
+            color: #00ffff; 
+            padding: 12px 16px; 
+            margin: 4px; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            transition: all 0.3s; 
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            min-height: 44px;
+            touch-action: manipulation;
+        }
+        .btn:active { 
+            box-shadow: 0 0 15px #00ffff; 
+            transform: scale(0.98); 
+            background: linear-gradient(45deg, #00ffff, #ffffff);
+            color: #000;
+        }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .nav { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .nav-col { display: flex; flex-direction: column; gap: 5px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { color: #ffffff; text-shadow: 0 0 10px #00ffff; font-size: 2em; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; background: #1a1a1a; border: 2px solid #00ffff; padding: 15px; border-radius: 10px; margin: 10px 0; }
+        .nav { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 8px; 
+            margin-bottom: 16px; 
+        }
+        .nav-col { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 4px; 
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 16px; 
+            padding: 8px;
+        }
+        .header h1 { 
+            color: #ffffff; 
+            text-shadow: 0 0 10px #00ffff; 
+            font-size: 1.8em; 
+            margin-bottom: 4px;
+        }
+        .header p {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); 
+            gap: 8px; 
+            background: #1a1a1a; 
+            border: 2px solid #00ffff; 
+            padding: 12px; 
+            border-radius: 10px; 
+            margin: 8px 0; 
+        }
         .stat { text-align: center; }
         .stat-name { color: #ffffff; font-weight: bold; }
         .stat-value { font-size: 1.5em; color: #00ffff; }
-        .tasks { background: #1a1a1a; border: 2px solid #00ffff; padding: 15px; border-radius: 10px; margin: 10px 0; }
-        .task { display: flex; justify-content: space-between; align-items: center; padding: 8px; margin: 5px 0; background: #2a2a2a; border-radius: 5px; }
-        .task.completed { background: #001a1a; border-left: 4px solid #00ffff; }
-        .dungeons-btn { background: linear-gradient(45deg, #2a2a2a, #1a1a1a); border: 2px solid #00ffff; color: #00ffff; font-size: 1.2em; padding: 20px; margin: 20px 0; }
-        .player-status { background: #1a1a1a; border: 2px solid #00ffff; padding: 15px; border-radius: 10px; margin: 10px 0; }
+        .tasks { 
+            background: #1a1a1a; 
+            border: 2px solid #00ffff; 
+            padding: 12px; 
+            border-radius: 10px; 
+            margin: 8px 0; 
+        }
+        .task { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px; 
+            margin: 4px 0; 
+            background: #2a2a2a; 
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .task.completed { 
+            background: #001a1a; 
+            border-left: 4px solid #00ffff; 
+        }
+        .dungeons-btn { 
+            background: linear-gradient(45deg, #2a2a2a, #1a1a1a); 
+            border: 2px solid #00ffff; 
+            color: #00ffff; 
+            font-size: 1.1em; 
+            padding: 16px; 
+            margin: 12px 0; 
+            width: 100%;
+            border-radius: 10px;
+        }
+        .player-status { 
+            background: #1a1a1a; 
+            border: 2px solid #00ffff; 
+            padding: 12px; 
+            border-radius: 10px; 
+            margin: 8px 0; 
+        }
         .hp-bar, .xp-bar { width: 100%; height: 20px; background: #2a2a2a; border-radius: 10px; overflow: hidden; margin: 5px 0; }
         .hp-fill { height: 100%; background: linear-gradient(90deg, #00ffff, #ffffff); transition: width 0.3s; }
         .xp-fill { height: 100%; background: linear-gradient(90deg, #00ffff, #ffffff); transition: width 0.3s; }
-        .grid { display: grid; gap: 10px; }
+        .grid { display: grid; gap: 8px; }
         .grid-2 { grid-template-columns: 1fr 1fr; }
-        .grid-3 { grid-template-columns: repeat(3, 1fr); }
-        .grid-4 { grid-template-columns: repeat(4, 1fr); }
-        .card { background: #1a1a1a; border: 2px solid #2a2a2a; padding: 15px; border-radius: 10px; }
-        .card:hover { border-color: #00ffff; }
+        .grid-3 { grid-template-columns: 1fr; }
+        .grid-4 { grid-template-columns: 1fr 1fr; }
+        
+        /* Mobile-specific grids */
+        @media (min-width: 480px) {
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+            .grid-4 { grid-template-columns: repeat(3, 1fr); }
+        }
+        
+        @media (min-width: 768px) {
+            .grid-3 { grid-template-columns: repeat(3, 1fr); }
+            .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        }
+        .card { 
+            background: #1a1a1a; 
+            border: 2px solid #2a2a2a; 
+            padding: 12px; 
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        .card:active { 
+            border-color: #00ffff; 
+            transform: scale(0.98);
+        }
         .combat { text-align: center; background: #1a1a1a; border: 2px solid #00ffff; padding: 20px; border-radius: 10px; position: relative; }
         .damage-log { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); z-index: 999; margin-top: 5px; }
         .player-damage-log { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); z-index: 999; margin-top: 5px; }
@@ -69,8 +249,456 @@
         .turn-player { color: #00ffff; }
         .turn-enemy { color: #ffffff; }
         .workout-prompt { background: #2a2a2a; border: 2px solid #00ffff; padding: 20px; margin: 20px 0; border-radius: 10px; }
-        .inventory-layout { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 15px; align-items: start; }
+        .inventory-layout { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 12px; 
+            align-items: start; 
+        }
+        
+        @media (min-width: 768px) {
+            .inventory-layout { 
+                grid-template-columns: 1fr 2fr 1fr; 
+                gap: 15px; 
+            }
+        }
+        
+        /* New Home Screen Layout */
+        .game-intro {
+            text-align: center;
+            padding: 16px 8px;
+            margin-bottom: 16px;
+        }
+        
+        .game-title {
+            font-size: 1.8em;
+            color: #ffffff;
+            text-shadow: 0 0 15px #00ffff;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .game-subtitle {
+            font-size: 0.9em;
+            color: #00ffff;
+            opacity: 0.8;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+        
+        .player-info h2 {
+            color: #ffffff;
+            font-size: 1.3em;
+            margin-bottom: 4px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 8px;
+            align-items: start;
+            margin-bottom: 16px;
+            max-width: 100%;
+        }
+        
+        .side-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .side-nav .btn {
+            font-size: 10px;
+            padding: 8px 6px;
+            text-align: center;
+            line-height: 1.1;
+            min-height: 55px;
+            width: 100%;
+            max-width: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .center-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+        }
+        
+        /* Level Display */
+        .level-display {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            max-width: 280px;
+        }
+        
+        .level-circle {
+            width: 70px;
+            height: 70px;
+            border: 3px solid #00ffff;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .level-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #00ffff;
+            line-height: 1;
+        }
+        
+        .level-text {
+            font-size: 0.6em;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .xp-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .xp-text {
+            font-size: 0.8em;
+            color: #ffffff;
+            text-align: center;
+        }
+        
+        /* Stats Container */
+        .stats-container {
+            width: 100%;
+            max-width: 280px;
+            background: #1a1a1a;
+            border: 2px solid #00ffff;
+            border-radius: 12px;
+            padding: 16px;
+        }
+        
+        .stats-header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .stats-header h3 {
+            color: #00ffff;
+            font-size: 1.1em;
+            margin-bottom: 4px;
+        }
+        
+        .unspent-points {
+            font-size: 0.9em;
+            color: #ffaa00;
+        }
+        
+        .stats-grid-new {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            transition: all 0.3s;
+        }
+        
+        .stat-item:hover {
+            background: #333;
+        }
+        
+        .stat-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .stat-icon {
+            font-size: 1.2em;
+        }
+        
+        .stat-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .stat-name {
+            font-size: 0.8em;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        .stat-value {
+            font-size: 1.2em;
+            color: #00ffff;
+            font-weight: bold;
+        }
+        
+        .stat-btn {
+            background: linear-gradient(45deg, #00ffff, #ffffff);
+            border: none;
+            color: #000;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .stat-btn:active {
+            transform: scale(0.9);
+        }
+        
+        .bottom-section {
+            margin-top: 16px;
+        }
+        
+        @media (min-width: 480px) {
+            .main-layout {
+                grid-template-columns: 1fr 2.5fr 1fr;
+                gap: 12px;
+            }
+            
+            .side-nav .btn {
+                font-size: 11px;
+                padding: 10px 8px;
+                min-height: 65px;
+                max-width: 80px;
+            }
+            
+            .level-display {
+                max-width: 320px;
+            }
+            
+            .stats-container {
+                max-width: 320px;
+            }
+        }
+        
+        /* Summons Screen Styles */
+        .section-header {
+            color: #00ffff;
+            font-size: 1.2em;
+            margin-bottom: 12px;
+            text-align: center;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        
+        .party-section {
+            background: #1a1a1a;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        
+        .party-status {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            font-size: 0.9em;
+        }
+        
+        .active-party-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        
+        .empty-party-slot {
+            background: #2a2a2a;
+            border: 2px dashed #555;
+            border-radius: 8px;
+            padding: 16px 8px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .empty-party-slot .slot-icon {
+            font-size: 2em;
+            margin-bottom: 4px;
+            opacity: 0.5;
+        }
+        
+        .empty-party-slot .slot-text {
+            font-size: 0.8em;
+            color: #888;
+        }
+        
+        .bosses-section {
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        
+        .boss-storage-info {
+            text-align: center;
+            margin-bottom: 16px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .boss-storage-info p {
+            margin: 4px 0;
+        }
+        
+        .boss-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            min-height: 100px;
+        }
+        
+        .no-bosses {
+            text-align: center;
+            padding: 24px;
+            opacity: 0.6;
+        }
+        
+        .no-bosses .empty-icon {
+            font-size: 3em;
+            margin-bottom: 8px;
+        }
+        
+        .no-bosses p {
+            margin: 4px 0;
+            font-size: 0.9em;
+        }
+        
+        .quick-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        
+        .info-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-icon {
+            font-size: 1.5em;
+        }
+        
+        .info-text {
+            font-size: 0.8em;
+            line-height: 1.3;
+        }
+        
+        .info-text strong {
+            color: #00ffff;
+        }
+        
+        /* Enhanced Item Display for PNGs */
+        .item-icon-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80px;
+            margin: 8px 0;
+        }
+        
+        .item-icon-png {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px;
+        }
+        
+        .item-tooltip {
+            position: relative;
+            cursor: help;
+        }
+        
+        .item-tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            border: 2px solid #00ffff;
+            color: #ffffff;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+        
+        /* Item Rarity Glow Effects */
+        .rarity-D { color: #00ff00; text-shadow: 0 0 5px #00ff0050; }
+        .rarity-C { color: #0080ff; text-shadow: 0 0 5px #0080ff50; }
+        .rarity-B { color: #8000ff; text-shadow: 0 0 5px #8000ff50; }
+        .rarity-A { color: #ff8000; text-shadow: 0 0 5px #ff800050; }
+        .rarity-S { color: #ff0080; text-shadow: 0 0 8px #ff008080; }
+        
+        /* Item Card Hover Effects for Mobile */
+        .card.item-card:active {
+            transform: scale(0.98);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        /* Inventory Grid Mobile Optimization */
+        @media (max-width: 414px) {
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            
+            .item-icon-png {
+                width: 48px;
+                height: 48px;
+            }
+        }
         .body-icon { font-size: 6em; text-align: center; }
+        
+        /* Match armor/accessory cards to wireframe height and width */
+        #armorSlots, #accessorySlots {
+            height: 300px !important;
+            width: 180px !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
         .equipment-slots { display: flex; flex-direction: column; gap: 10px; }
         .shop-section { margin: 20px 0; padding: 15px; background: #1a1a1a; border: 2px solid #00ffff; border-radius: 10px; }
         .music-controls { display: flex; justify-content: center; gap: 10px; margin: 10px 0; }
@@ -707,54 +1335,118 @@
 
         <!-- Home Screen -->
         <div id="home" class="screen">
-            <div class="nav">
-                <div class="nav-col">
-                    <button class="btn" onclick="showScreen('profile')">👤 Profile</button>
-                    <button class="btn" onclick="showScreen('shop')">🛒 Shop</button>
-                    <button class="btn" onclick="showScreen('settings')">⚙️ Settings</button>
-                </div>
-                <div class="nav-col">
-                    <button class="btn" onclick="showScreen('inventory')">🎒 Inventory</button>
-                    <button class="btn" onclick="showScreen('chests')">📦 Chests</button>
-                    <button class="btn" onclick="showScreen('summoning')">👥 Party</button>
-                    <button class="btn" onclick="showScreen('music')">🎵 Music</button>
+            <!-- Game Title and Introduction at Top -->
+            <div class="game-intro">
+                <h1 class="game-title">⚔️ SOLO ASCENT ⚔️</h1>
+                <p class="game-subtitle">Rise through the dungeons, forge your legend</p>
+                <div class="player-info">
+                    <h2 id="playerName">Warrior</h2>
+                    <p>💰 <span id="playerCoins">0</span> coins</p>
                 </div>
             </div>
 
-            <div class="header">
-                <h1 id="playerName">Warrior</h1>
-                <p>💰 <span id="playerCoins">0</span> coins</p>
-            </div>
+            <!-- Main Layout Container -->
+            <div class="main-layout">
+                <!-- Left Side UI Buttons -->
+                <div class="side-nav side-nav-left">
+                    <button class="btn" onclick="showScreen('profile')">👤<br>Profile</button>
+                    <button class="btn" onclick="showScreen('inventory')">🎒<br>Inventory</button>
+                    <button class="btn" onclick="showScreen('shop')">🛒<br>Shop</button>
+                    <button class="btn" onclick="showDailyTasks()">📋<br>Daily Tasks</button>
+                </div>
 
-            <div class="tasks">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h2 style="color: #00ffff; margin: 0;">📋 DAILY TASKS</h2>
-                    <div id="resetTimer" style="color: #ffaa00; font-size: 0.9em; text-align: right;">
-                        <div>Next reset in:</div>
-                        <div id="countdownText">--:--:--</div>
+                <!-- Center: Level and Stats -->
+                <div class="center-content">
+                    <div class="level-display">
+                        <div class="level-circle">
+                            <div class="level-number" id="playerLevel">1</div>
+                            <div class="level-text">LEVEL</div>
+                        </div>
+                        <div class="xp-section">
+                            <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+                            <div class="xp-text">Experience</div>
+                        </div>
+                    </div>
+
+                    <div class="stats-container">
+                        <div class="stats-header">
+                            <h3>Character Stats</h3>
+                            <div class="unspent-points">
+                                <span id="unspentPoints">0</span> points available
+                            </div>
+                        </div>
+                        
+                        <div class="stats-grid-new">
+                            <div class="stat-item">
+                                <div class="stat-info">
+                                    <div class="stat-icon">💪</div>
+                                    <div class="stat-details">
+                                        <div class="stat-name">STR</div>
+                                        <div class="stat-value" id="strValue">1</div>
+                                    </div>
+                                </div>
+                                <button class="stat-btn" onclick="assignStat('str')">+</button>
+                            </div>
+                            
+                            <div class="stat-item">
+                                <div class="stat-info">
+                                    <div class="stat-icon">⚡</div>
+                                    <div class="stat-details">
+                                        <div class="stat-name">AGI</div>
+                                        <div class="stat-value" id="agiValue">1</div>
+                                    </div>
+                                </div>
+                                <button class="stat-btn" onclick="assignStat('agi')">+</button>
+                            </div>
+                            
+                            <div class="stat-item">
+                                <div class="stat-info">
+                                    <div class="stat-icon">🛡️</div>
+                                    <div class="stat-details">
+                                        <div class="stat-name">VIT</div>
+                                        <div class="stat-value" id="vitValue">1</div>
+                                    </div>
+                                </div>
+                                <button class="stat-btn" onclick="assignStat('vit')">+</button>
+                            </div>
+                            
+                            <div class="stat-item">
+                                <div class="stat-info">
+                                    <div class="stat-icon">🧠</div>
+                                    <div class="stat-details">
+                                        <div class="stat-name">INT</div>
+                                        <div class="stat-value" id="intValue">1</div>
+                                    </div>
+                                </div>
+                                <button class="stat-btn" onclick="assignStat('int')">+</button>
+                            </div>
+                            
+                            <div class="stat-item">
+                                <div class="stat-info">
+                                    <div class="stat-icon">👁️</div>
+                                    <div class="stat-details">
+                                        <div class="stat-name">PER</div>
+                                        <div class="stat-value" id="perValue">1</div>
+                                    </div>
+                                </div>
+                                <button class="stat-btn" onclick="assignStat('per')">+</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div id="taskList"></div>
-                <button id="claimBtn" class="btn" onclick="claimRewards()" style="width: 100%; background: linear-gradient(45deg, #00ffff, #ffffff); border-color: #00ffff; color: #000000; display: none;">🎁 CLAIM ALL REWARDS</button>
+
+                <!-- Right Side UI Buttons -->
+                <div class="side-nav side-nav-right">
+                    <button class="btn" onclick="showScreen('chests')">📦<br>Chests</button>
+                    <button class="btn" onclick="showScreen('summoning')">👥<br>Party</button>
+                    <button class="btn" onclick="showScreen('settings')">⚙️<br>Settings</button>
+                    <button class="btn" onclick="showScreen('music')">🎵<br>Music</button>
+                </div>
             </div>
 
-            <button class="btn dungeons-btn" onclick="showScreen('dungeons')" style="width: 100%;">⚔️ ENTER DUNGEONS</button>
-            
-
-            <div class="stats-grid">
-                <div class="stat"><div class="stat-name">STR</div><div class="stat-value" id="strValue">1</div><button class="btn" onclick="assignStat('str')">+</button></div>
-                <div class="stat"><div class="stat-name">AGI</div><div class="stat-value" id="agiValue">1</div><button class="btn" onclick="assignStat('agi')">+</button></div>
-                <div class="stat"><div class="stat-name">VIT</div><div class="stat-value" id="vitValue">1</div><button class="btn" onclick="assignStat('vit')">+</button></div>
-                <div class="stat"><div class="stat-name">INT</div><div class="stat-value" id="intValue">1</div><button class="btn" onclick="assignStat('int')">+</button></div>
-                <div class="stat"><div class="stat-name">PER</div><div class="stat-value" id="perValue">1</div><button class="btn" onclick="assignStat('per')">+</button></div>
-            </div>
-            <p style="text-align: center; color: #ffffff;">Unspent Points: <span id="unspentPoints">0</span></p>
-
-            <div class="player-status">
-                <p>Level <span id="playerLevel">1</span></p>
-                <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
-                <p>HP: <span id="playerHp">100</span>/<span id="playerMaxHp">100</span></p>
-                <div class="hp-bar"><div class="hp-fill" id="hpFill"></div></div>
+            <!-- Dungeons at Bottom -->
+            <div class="bottom-section">
+                <button class="btn dungeons-btn" onclick="showScreen('dungeons')" style="width: 100%;">⚔️ ENTER DUNGEONS</button>
             </div>
         </div>
 
@@ -841,7 +1533,9 @@
                     <div id="itemDropsList"></div>
                 </div>
                 
-                <button class="btn" id="captureCloseBtn" onclick="closeCaptureScreen()" style="display: none;">Continue</button>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn" id="captureCloseBtn" onclick="closeCaptureScreen()" style="display: none;">Continue</button>
+                </div>
             </div>
         </div>
 
@@ -856,11 +1550,12 @@
                         <div>🛡️ Helmet: <span id="helmet">None</span></div>
                         <div>👕 Chest: <span id="chest">None</span></div>
                         <div>👖 Legs: <span id="legs">None</span></div>
-                        <div>👞 Boots: <span id="boots">None</span></div>
                     </div>
                 </div>
                 <div>
-                    <div class="body-icon">🧙‍♂️</div>
+                    <div class="body-icon">
+                        <img src="new one.png" alt="Character" style="max-width: 100%; height: auto;">
+                    </div>
                     <div class="card" style="text-align: center;">
                         <div>⚔️ Weapon: <span id="weapon">None</span></div>
                     </div>
@@ -871,11 +1566,10 @@
                         <div>💍 Ring 1: <span id="ring1">None</span></div>
                         <div>💍 Ring 2: <span id="ring2">None</span></div>
                         <div>📿 Necklace: <span id="necklace">None</span></div>
-                        <div>⌚ Bracelet: <span id="bracelet">None</span></div>
                     </div>
                 </div>
             </div>
-            <div class="card">
+            <div class="card" style="text-align: center; margin: 0 auto;">
                 <h3>Sorting</h3>
                 <div class="grid-4">
                     <button class="btn" onclick="filterItems('all')">All</button>
@@ -961,32 +1655,88 @@
                 <div id="dungeonStats" class="grid grid-3"></div>
             </div>
         </div>
+        
+        <!-- Daily Tasks Screen -->
+        <div id="dailyTasks" class="screen">
+            <button class="btn" onclick="showScreen('home')">🏠 Home</button>
+            
+            <div class="header">
+                <h1>📋 DAILY TASKS</h1>
+                <div id="resetTimer" style="color: #ffaa00; font-size: 0.9em; text-align: center;">
+                    <div>Next reset in:</div>
+                    <div id="countdownText">--:--:--</div>
+                </div>
+            </div>
+
+            <div class="tasks">
+                <div id="taskList"></div>
+                <button id="claimBtn" class="btn" onclick="claimRewards()" style="width: 100%; background: linear-gradient(45deg, #00ffff, #ffffff); border-color: #00ffff; color: #000000; display: none;">🎁 CLAIM ALL REWARDS</button>
+            </div>
+        </div>
+        
         <!-- Summoning Screen -->
         <div id="summoning" class="screen">
             <button class="btn" onclick="showScreen('home')">🏠 Home</button>
             
-            <!-- Summons Party Section -->
-            <div class="summons-section">
-                <div class="section-title">SUMMONS PARTY</div>
-                <div id="activeParty" class="party-grid">
+            <div class="header">
+                <h1>👥 PARTY & SUMMONS</h1>
+                <p>Manage your captured bosses and active party</p>
+            </div>
+
+            <!-- Active Party Section -->
+            <div class="party-section">
+                <h2 class="section-header">⚔️ Active Party</h2>
+                <div class="party-status">
+                    <p><strong>Party Size:</strong> <span id="partyCount">0</span>/3</p>
+                    <p><strong>Success Rate:</strong> <span id="captureRate">5%</span></p>
+                </div>
+                <div id="activeParty" class="active-party-grid">
                     <!-- Active party members will appear here -->
+                    <div class="empty-party-slot">
+                        <div class="slot-icon">👤</div>
+                        <div class="slot-text">Empty Slot</div>
+                    </div>
+                    <div class="empty-party-slot">
+                        <div class="slot-icon">👤</div>
+                        <div class="slot-text">Empty Slot</div>
+                    </div>
+                    <div class="empty-party-slot">
+                        <div class="slot-icon">👤</div>
+                        <div class="slot-text">Empty Slot</div>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Current UI for Dungeon Storage Section -->
-            <div class="summons-section">
-                <div class="section-title">CURRENT UI FOR DUNGEON STORAGE</div>
-                <div id="bossGrid" class="grid grid-2"></div>
+
+            <!-- Captured Bosses Section -->
+            <div class="bosses-section">
+                <h2 class="section-header">📦 Captured Bosses</h2>
+                <div class="boss-storage-info">
+                    <p>🎯 Defeat dungeon bosses to capture them!</p>
+                    <p>📊 Tap captured bosses to add/remove from party</p>
+                </div>
+                <div id="bossGrid" class="boss-grid"></div>
+                <div id="noBossesMessage" class="no-bosses">
+                    <div class="empty-icon">🏺</div>
+                    <p>No bosses captured yet</p>
+                    <p>Complete dungeons to capture bosses!</p>
+                </div>
             </div>
-            
-            <!-- Info Section -->
-            <div class="summons-section">
-                <div class="section-title">INFO</div>
-                <div class="info-content">
-                    <p>🎯 Capture bosses by defeating dungeon final bosses!</p>
-                    <p>⚔️ Add up to 3 bosses to your party - they'll fight alongside you!</p>
-                    <p>📊 Success rate: 5% + INT × 2%</p>
-                    <p>💪 Party members deal damage and can tank hits for you!</p>
+
+            <!-- Quick Info -->
+            <div class="quick-info">
+                <div class="info-card">
+                    <div class="info-icon">🎯</div>
+                    <div class="info-text">
+                        <strong>Capture Rate</strong><br>
+                        5% base + INT × 2%
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">💪</div>
+                    <div class="info-text">
+                        <strong>Party Benefits</strong><br>
+                        Deal damage & tank hits
+                    </div>
                 </div>
             </div>
         </div>
@@ -1014,6 +1764,7 @@
                 <h1>📦 TREASURE CHESTS</h1>
                 <p>Open chests to claim your rewards!</p>
             </div>
+            
             
             <div id="chestsGrid" class="grid grid-2"></div>
         </div>
@@ -1144,6 +1895,40 @@
             </div>
         </div>
         
+        <!-- Chest Rewards Modal -->
+        <div id="chestRewardsModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-title">🎉 CHEST OPENED!</div>
+                
+                <div id="chestRewardsContent" class="rewards-content">
+                    <!-- Chest rewards will be populated here -->
+                </div>
+                
+                <div class="modal-buttons">
+                    <button class="modal-btn confirm" onclick="acceptChestRewards()">✅ ACCEPT</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chest Confirmation Modal -->
+        <div id="chestConfirmModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-title">🗄️ OPEN CHEST?</div>
+                
+                <div class="chest-confirm-content">
+                    <div id="chestConfirmIcon" class="chest-icon" style="font-size: 4em; margin: 20px 0;"></div>
+                    <h3 id="chestConfirmName"></h3>
+                    <div id="chestConfirmTimer" style="color: #00ffff; font-size: 1.2em; margin: 15px 0;"></div>
+                    <p style="color: #cccccc;">This chest will take time to open. Are you sure?</p>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button class="modal-btn confirm" id="confirmChestOpen">✅ UNLOCK</button>
+                    <button class="modal-btn cancel" onclick="closeChestConfirmModal()">❌ CANCEL</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Run Away Confirmation Modal -->
         <div id="runAwayModal" class="modal-overlay">
             <div class="modal-content">
@@ -1235,6 +2020,12 @@
             if (screenName === 'settings') loadSettings();
             if (screenName === 'summoning') loadSummoning();
             if (screenName === 'chests') loadChests();
+        };
+
+        // Navigation for Daily Tasks
+        const showDailyTasks = () => {
+            showScreen('dailyTasks');
+            updateTasks(); // Refresh the daily tasks when showing the screen
         };
 
         // Authentication
@@ -1367,24 +2158,44 @@
         const updateUI = () => {
             if (!currentUser) return;
             
-            document.getElementById('playerName').textContent = currentUser.nickname;
-            document.getElementById('playerCoins').textContent = currentUser.coins;
-            document.getElementById('playerLevel').textContent = currentUser.level;
-            document.getElementById('playerHp').textContent = currentUser.hp;
-            document.getElementById('playerMaxHp').textContent = currentUser.maxHp;
-            document.getElementById('unspentPoints').textContent = currentUser.unspentPoints;
+            // Update basic info with null checks
+            const playerName = document.getElementById('playerName');
+            const playerCoins = document.getElementById('playerCoins');
+            const playerLevel = document.getElementById('playerLevel');
+            const unspentPoints = document.getElementById('unspentPoints');
             
-            // Update stats
+            if (playerName) playerName.textContent = currentUser.nickname;
+            if (playerCoins) playerCoins.textContent = currentUser.coins;
+            if (playerLevel) playerLevel.textContent = currentUser.level;
+            if (unspentPoints) unspentPoints.textContent = currentUser.unspentPoints;
+            
+            // Update HP elements only if they exist (for profile screen, etc.)
+            const playerHp = document.getElementById('playerHp');
+            const playerMaxHp = document.getElementById('playerMaxHp');
+            if (playerHp) playerHp.textContent = currentUser.hp;
+            if (playerMaxHp) playerMaxHp.textContent = currentUser.maxHp;
+            
+            // Update stats with null checks
             ['str', 'agi', 'vit', 'int', 'per'].forEach(stat => {
-                document.getElementById(`${stat}Value`).textContent = currentUser.stats[stat];
+                const statElement = document.getElementById(`${stat}Value`);
+                if (statElement) {
+                    statElement.textContent = currentUser.stats[stat];
+                }
             });
             
             
-            // Update bars
+            // Update bars with null checks
             const xpProgress = (currentUser.xp / (currentUser.level * 100)) * 100;
             const hpProgress = (currentUser.hp / currentUser.maxHp) * 100;
-            document.getElementById('xpFill').style.width = `${xpProgress}%`;
-            document.getElementById('hpFill').style.width = `${hpProgress}%`;
+            
+            const xpFill = document.getElementById('xpFill');
+            const hpFill = document.getElementById('hpFill');
+            
+            if (xpFill) xpFill.style.width = `${xpProgress}%`;
+            if (hpFill) hpFill.style.width = `${hpProgress}%`;
+            
+            // Update equipment display
+            updateEquipmentDisplay();
             
             // Update tasks
             updateTasks();
@@ -1396,14 +2207,80 @@
             updateBossGrid();
         };
 
+        const updateEquipmentDisplay = () => {
+            if (!currentUser || !currentUser.inventory || !currentUser.inventory.equipped) return;
+            
+            const equipped = currentUser.inventory.equipped;
+            
+            // Update weapon display
+            const weaponElement = document.getElementById('weapon');
+            if (weaponElement) {
+                weaponElement.textContent = equipped.weapon ? equipped.weapon.name : 'None';
+            }
+            
+            // Update armor slots
+            const helmetElement = document.getElementById('helmet');
+            const chestElement = document.getElementById('chest');
+            const legsElement = document.getElementById('legs');
+            
+            // Find helmets, chestplates, and leggings in armor array
+            let helmet = null;
+            let chest = null;
+            let legs = null;
+            
+            equipped.armor.forEach(item => {
+                if (item && item.name) {
+                    // Check if it's a helmet (contains helmet, crown, helm, mask words)
+                    if (item.name.toLowerCase().includes('helm') || 
+                        item.name.toLowerCase().includes('crown') || 
+                        item.name.toLowerCase().includes('mask')) {
+                        helmet = item;
+                    }
+                    // Check if it's a chestplate (contains chest, plate, armor, aegis, cuirass words)
+                    else if (item.name.toLowerCase().includes('chest') || 
+                             item.name.toLowerCase().includes('plate') || 
+                             item.name.toLowerCase().includes('armor') || 
+                             item.name.toLowerCase().includes('aegis') ||
+                             item.name.toLowerCase().includes('cuirass') ||
+                             item.name.toLowerCase().includes('vest') ||
+                             item.name.toLowerCase().includes('jerkin')) {
+                        chest = item;
+                    }
+                    // Check if it's leggings (contains leggings, pants, greaves, legs words)
+                    else if (item.name.toLowerCase().includes('legging') || 
+                             item.name.toLowerCase().includes('pants') || 
+                             item.name.toLowerCase().includes('greaves') ||
+                             item.name.toLowerCase().includes('legs')) {
+                        legs = item;
+                    }
+                }
+            });
+            
+            if (helmetElement) helmetElement.textContent = helmet ? helmet.name : 'None';
+            if (chestElement) chestElement.textContent = chest ? chest.name : 'None';
+            if (legsElement) legsElement.textContent = legs ? legs.name : 'None';
+            
+            // Update accessories
+            const ring1Element = document.getElementById('ring1');
+            const ring2Element = document.getElementById('ring2');
+            const necklaceElement = document.getElementById('necklace');
+            
+            if (ring1Element) ring1Element.textContent = equipped.accessories[0] ? equipped.accessories[0].name : 'None';
+            if (ring2Element) ring2Element.textContent = equipped.accessories[1] ? equipped.accessories[1].name : 'None';
+            if (necklaceElement) necklaceElement.textContent = equipped.accessories[2] ? equipped.accessories[2].name : 'None';
+        };
+
         const updateCountdownTimer = () => {
             if (!currentUser || !currentUser.nextResetTime) return;
+            
+            const countdownElement = document.getElementById('countdownText');
+            if (!countdownElement) return;
             
             const now = Date.now();
             const timeUntilReset = currentUser.nextResetTime - now;
             
             if (timeUntilReset <= 0) {
-                document.getElementById('countdownText').textContent = '00:00:00';
+                countdownElement.textContent = '00:00:00';
                 return;
             }
             
@@ -1412,7 +2289,7 @@
             const seconds = Math.floor((timeUntilReset % (1000 * 60)) / 1000);
             
             const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            document.getElementById('countdownText').textContent = formattedTime;
+            countdownElement.textContent = formattedTime;
         };
 
         const updateTasks = () => {
@@ -1476,31 +2353,33 @@
         };
 
         const claimRewards = async () => {
-            showDailyTaskRewardsModal();
-        };
-        
-        const showDailyTaskRewardsModal = () => {
-            const modalContent = document.getElementById('rewardsModalContent');
-            modalContent.innerHTML = `
-                <div class="reward-item">
-                    <div class="reward-icon">🎉</div>
-                    <h3>All Daily Tasks Complete!</h3>
-                    <p>Great job finishing all your daily tasks!</p>
-                    <p><strong>Rewards:</strong></p>
-                    <p>💰 50 Coins</p>
-                    <p>⭐ 100 XP</p>
-                    <p>📦 Treasure Chest</p>
-                </div>
-            `;
+            // Directly claim and show specific chest type
+            const result = await request(`/user/${currentUser.id}/tasks/claim`, { method: 'POST' });
+            currentUser = result.user || result;
+            updateUI();
             
-            document.getElementById('rewardsModal').style.display = 'flex';
+            // Show specific chest type that was actually awarded
+            if (result.rewardChest) {
+                const chestName = result.rewardChest.tier === 'SILVER_TEST' ? 'Silver Chest' : 'Gold Chest';
+                showNotification(`Daily task rewards claimed! You got a ${chestName}!`, 'success');
+            } else {
+                showNotification('Daily task rewards claimed! You got a Chest!', 'success');
+            }
+            showScreen('home');
         };
         
         const claimModalRewards = async () => {
             const result = await request(`/user/${currentUser.id}/tasks/claim`, { method: 'POST' });
             currentUser = result.user || result;
             updateUI();
-            showNotification('Claimed 100 XP, 50 coins, and a treasure chest!', 'success');
+            
+            // Show specific chest type if available
+            if (result.rewardChest) {
+                const chestName = result.rewardChest.tier === 'SILVER_TEST' ? 'Silver Chest' : 'Gold Chest';
+                showNotification(`Claimed ${chestName}!`, 'success');
+            } else {
+                showNotification('Claimed Chest!', 'success');
+            }
             closeRewardsModal();
         };
         
@@ -2056,18 +2935,31 @@
         // Inventory
         const loadInventory = () => {
             const equipped = currentUser.inventory.equipped;
-            document.getElementById('weapon').textContent = equipped.weapon?.name || 'None';
+            const weaponElement = document.getElementById('weapon');
+            if (equipped.weapon) {
+                const weapon = equipped.weapon;
+                if (weapon.icon) {
+                    if (weapon.icon.endsWith('.png')) {
+                        weaponElement.innerHTML = `<img src="${weapon.icon}" alt="${weapon.name}" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 5px;">${weapon.name}`;
+                    } else {
+                        weaponElement.innerHTML = `${weapon.icon} ${weapon.name}`;
+                    }
+                } else {
+                    weaponElement.textContent = weapon.name;
+                }
+            } else {
+                weaponElement.textContent = 'None';
+            }
             
             ['helmet', 'chest', 'legs', 'boots'].forEach((slot, i) => {
                 document.getElementById(slot).textContent = equipped.armor[i]?.name || 'None';
             });
             
-            ['ring1', 'ring2', 'necklace', 'bracelet'].forEach((slot, i) => {
+            ['ring1', 'ring2', 'necklace'].forEach((slot, i) => {
                 const element = document.getElementById(slot);
                 if (slot === 'ring1') element.textContent = equipped.accessories[0]?.name || 'None';
                 else if (slot === 'ring2') element.textContent = equipped.accessories[1]?.name || 'None';
                 else if (slot === 'necklace') element.textContent = equipped.accessories[2]?.name || 'None';
-                else element.textContent = equipped.accessories[3]?.name || 'None';
             });
             
             filterItems('all');
@@ -2089,6 +2981,29 @@
             const grid = document.getElementById('itemGrid');
             grid.innerHTML = '';
             
+            // Update button styles to show active category
+            document.querySelectorAll('#inventory .btn').forEach(btn => {
+                if (btn.onclick && btn.onclick.toString().includes('filterItems')) {
+                    btn.style.backgroundColor = '';
+                    btn.style.color = '';
+                }
+            });
+            
+            // Highlight the active button
+            const buttons = {
+                'all': 'filterItems(\'all\')',
+                'weapons': 'filterItems(\'weapons\')',
+                'armor': 'filterItems(\'armor\')',
+                'accessories': 'filterItems(\'accessories\')'
+            };
+            
+            document.querySelectorAll('#inventory .btn').forEach(btn => {
+                if (btn.onclick && btn.onclick.toString().includes(buttons[category])) {
+                    btn.style.backgroundColor = '#4a90e2';
+                    btn.style.color = 'white';
+                }
+            });
+            
             const filteredItems = category === 'all' ? 
                 currentUser.inventory.items : 
                 currentUser.inventory.items.filter(item => item.category === category);
@@ -2101,12 +3016,29 @@
                 if (item.category === 'potions') {
                     actionButton = ''; // No button for potions in inventory
                 } else {
-                    actionButton = `<button class="btn" onclick="equipItem('${item.id}')">Equip</button>`;
+                    // Check if item is equipped
+                    const isEquipped = isItemEquipped(item.id);
+                    if (isEquipped) {
+                        actionButton = `<button class="btn" onclick="unequipItem('${item.id}')">Unequip</button>`;
+                    } else {
+                        actionButton = `<button class="btn" onclick="equipItem('${item.id}')">Equip</button>`;
+                    }
                 }
                 
                 const rarityClass = `rarity-${item.rarity || 'common'}`;
                 
+                // Display item icon if available
+                let itemIconHtml = '';
+                if (item.icon) {
+                    if (item.icon.endsWith('.png')) {
+                        itemIconHtml = `<img src="${item.icon}" alt="${item.name}" style="width: 60px; height: 60px; margin: 10px auto; display: block;">`;
+                    } else {
+                        itemIconHtml = `<div style="font-size: 3em; text-align: center; margin: 10px 0;">${item.icon}</div>`;
+                    }
+                }
+                
                 card.innerHTML = `
+                    ${itemIconHtml}
                     <h4 class="${rarityClass}">${item.name}</h4>
                     <p class="item-description">${item.description || 'No description'}</p>
                     <p>Category: ${item.category}</p>
@@ -2118,10 +3050,39 @@
             });
         };
 
+        const isItemEquipped = (itemId) => {
+            if (!currentUser || !currentUser.inventory || !currentUser.inventory.equipped) return false;
+            
+            const equipped = currentUser.inventory.equipped;
+            
+            // Check weapon
+            if (equipped.weapon && equipped.weapon.id === itemId) return true;
+            
+            // Check armor slots
+            for (let armor of equipped.armor) {
+                if (armor && armor.id === itemId) return true;
+            }
+            
+            // Check accessory slots  
+            for (let accessory of equipped.accessories) {
+                if (accessory && accessory.id === itemId) return true;
+            }
+            
+            return false;
+        };
+
         const equipItem = async (itemId) => {
             await request(`/user/${currentUser.id}/inventory/equip/${itemId}`, { method: 'POST' });
             currentUser = await request(`/user/${currentUser.id}`);
             loadInventory();
+            updateUI();
+        };
+
+        const unequipItem = async (itemId) => {
+            await request(`/user/${currentUser.id}/inventory/unequip/${itemId}`, { method: 'POST' });
+            currentUser = await request(`/user/${currentUser.id}`);
+            loadInventory();
+            updateUI();
         };
 
         const useItem = async (itemId) => {
@@ -2135,6 +3096,7 @@
                 showNotification('Cannot use this item right now', 'warning');
             }
         };
+
 
         // Shop
         const loadShop = async () => {
@@ -2355,6 +3317,8 @@
             const taskList = document.getElementById('settingsTaskList');
             const claimBtn = document.getElementById('settingsClaimBtn');
             
+            if (!taskList) return;
+            
             taskList.innerHTML = '';
             currentUser.dailyTasks.tasks.forEach((task, index) => {
                 const completed = currentUser.dailyTasks.completed.includes(index);
@@ -2371,7 +3335,9 @@
             
             const allCompleted = currentUser.dailyTasks.completed.length === 5;
             const canClaim = allCompleted && (Date.now() - currentUser.dailyTasks.lastClaimed > 86400000);
-            claimBtn.style.display = canClaim ? 'block' : 'none';
+            if (claimBtn) {
+                claimBtn.style.display = canClaim ? 'block' : 'none';
+            }
         };
 
         const toggleSetting = (setting) => {
@@ -2592,6 +3558,7 @@
                 chestsData.chests.forEach(chest => {
                 const chestCard = document.createElement('div');
                 chestCard.className = 'chest-card';
+                chestCard.setAttribute('data-chest-id', chest.id);
                 
                 const now = Date.now();
                 const canOpen = chest.openTimeHours === 0 || !chest.isOpening || (chest.isOpening && (now - chest.startedOpening) >= (chest.openTimeHours * 60 * 60 * 1000));
@@ -2618,13 +3585,23 @@
                     timerText = `${chest.openTimeHours}h to open`;
                 }
                 
+                // Use custom sprites for test chests
+                let chestIconHtml;
+                if (chest.tier === 'SILVER_TEST') {
+                    chestIconHtml = '<img src="silverchest.png" alt="Silver Chest" style="width: 80px; height: 80px;">';
+                } else if (chest.tier === 'GOLD_TEST') {
+                    chestIconHtml = '<img src="goldchest.png" alt="Gold Chest" style="width: 80px; height: 80px;">';
+                } else {
+                    chestIconHtml = `<div class="chest-icon">${chest.icon}</div>`;
+                }
+                
                 chestCard.innerHTML = `
-                    <div class="chest-icon">${chest.icon}</div>
+                    ${chestIconHtml}
                     <h4 class="rarity-${chest.tier}">${chest.name}</h4>
                     <p>Source: ${chest.source}</p>
                     <div class="chest-timer">${timerText}</div>
                     <button class="btn" onclick="handleChest('${chest.id}')" ${!canOpen && chest.isOpening ? 'disabled' : ''}>
-                        ${chest.openTimeHours === 0 ? 'Open Now' : chest.isOpening ? (canOpen ? 'Open!' : 'Opening...') : 'Start Opening'}
+                        ${chest.openTimeHours === 0 ? 'Open' : chest.isOpening ? (canOpen ? 'Open' : 'Unlocking...') : 'Unlock'}
                     </button>
                 `;
                 
@@ -2637,26 +3614,153 @@
             }
         };
         
+        let currentChestToOpen = null;
+        let currentChestRewards = null;
+
         const handleChest = async (chestId) => {
             const chest = currentUser.chests.find(c => c.id === chestId);
             if (!chest) return;
             
             if (chest.openTimeHours === 0 || (chest.isOpening && Date.now() - chest.startedOpening >= chest.openTimeHours * 60 * 60 * 1000)) {
-                // Open the chest
+                // Open the chest and show rewards screen
                 const result = await request(`/user/${currentUser.id}/chest/${chestId}/open`, { method: 'POST' });
                 if (result.success) {
-                    currentUser = result.user;
-                    updateUI();
-                    showNotification(`Opened ${chest.name}! Got ${result.contents.coins} coins, ${result.contents.xp} XP, and ${result.contents.items.length} items!`, 'success', 4000);
-                    loadChests();
+                    currentChestRewards = result;
+                    showChestRewardsModal(chest, result.contents);
                 }
             } else if (!chest.isOpening) {
-                // Start opening the chest
-                const result = await request(`/user/${currentUser.id}/chest/${chestId}/start-opening`, { method: 'POST' });
-                if (result.success) {
-                    showNotification(`Started opening ${chest.name}. Come back in ${chest.openTimeHours} hour(s)!`, 'info');
-                    loadChests();
+                // Show confirmation dialog for test chests
+                if (chest.tier === 'SILVER_TEST' || chest.tier === 'GOLD_TEST') {
+                    showChestConfirmModal(chest);
+                } else {
+                    // Start opening regular chests immediately
+                    const result = await request(`/user/${currentUser.id}/chest/${chestId}/start-opening`, { method: 'POST' });
+                    if (result.success) {
+                        showNotification(`Started unlocking ${chest.name}. Come back in ${chest.openTimeHours} hour(s)!`, 'info');
+                        loadChests();
+                    }
                 }
+            }
+        };
+
+        const showChestRewardsModal = (chest, contents) => {
+            const modalContent = document.getElementById('chestRewardsContent');
+            modalContent.innerHTML = '';
+            
+            // Show chest icon and name
+            const headerDiv = document.createElement('div');
+            headerDiv.style = 'text-align: center; margin-bottom: 20px;';
+            
+            if (chest.tier === 'SILVER_TEST') {
+                headerDiv.innerHTML = '<img src="silverchest.png" alt="Silver Chest" style="width: 64px; height: 64px;">';
+            } else if (chest.tier === 'GOLD_TEST') {
+                headerDiv.innerHTML = '<img src="goldchest.png" alt="Gold Chest" style="width: 64px; height: 64px;">';
+            } else {
+                headerDiv.innerHTML = `<div style="font-size: 4em;">${chest.icon}</div>`;
+            }
+            headerDiv.innerHTML += `<h3 class="rarity-${chest.tier}">${chest.name}</h3>`;
+            modalContent.appendChild(headerDiv);
+            
+            // Show rewards
+            if (contents.coins > 0 || contents.xp > 0) {
+                const basicRewardsDiv = document.createElement('div');
+                basicRewardsDiv.className = 'reward-item';
+                basicRewardsDiv.innerHTML = `
+                    <div class="reward-icon">💰</div>
+                    <h3>Basic Rewards</h3>
+                    ${contents.coins > 0 ? `<p>🪙 ${contents.coins} Coins</p>` : ''}
+                    ${contents.xp > 0 ? `<p>⭐ ${contents.xp} XP</p>` : ''}
+                `;
+                modalContent.appendChild(basicRewardsDiv);
+            }
+            
+            // Show items
+            if (contents.items && contents.items.length > 0) {
+                contents.items.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'reward-item';
+                    itemDiv.innerHTML = `
+                        <div class="reward-icon">📦</div>
+                        <h3 class="rarity-${item.rarity}">${item.name}</h3>
+                        <p>${item.category}</p>
+                        <p class="item-description">${item.description}</p>
+                        ${Object.keys(item.stats || {}).length > 0 ? 
+                            `<p class="item-stats">${Object.entries(item.stats).map(([stat, val]) => 
+                                `${stat.toUpperCase()}: +${val}`).join(', ')}</p>` : ''}
+                    `;
+                    modalContent.appendChild(itemDiv);
+                });
+            }
+            
+            document.getElementById('chestRewardsModal').style.display = 'flex';
+        };
+
+        const acceptChestRewards = () => {
+            if (currentChestRewards) {
+                currentUser = currentChestRewards.user;
+                updateUI();
+                loadChests();
+                
+                const chest = currentChestRewards.chest || {};
+                const contents = currentChestRewards.contents || {};
+                const message = chest.tier === 'SILVER_TEST' || chest.tier === 'GOLD_TEST' ? 
+                    `Claimed ${contents.items.length} items!` :
+                    `Claimed ${contents.coins} coins, ${contents.xp} XP, and ${contents.items.length} items!`;
+                showNotification(message, 'success', 3000);
+            }
+            
+            document.getElementById('chestRewardsModal').style.display = 'none';
+            currentChestRewards = null;
+        };
+
+        const showChestConfirmModal = (chest) => {
+            currentChestToOpen = chest;
+            
+            const iconElement = document.getElementById('chestConfirmIcon');
+            if (chest.tier === 'SILVER_TEST') {
+                iconElement.innerHTML = '<img src="silverchest.png" alt="Silver Chest" style="width: 80px; height: 80px;">';
+            } else if (chest.tier === 'GOLD_TEST') {
+                iconElement.innerHTML = '<img src="goldchest.png" alt="Gold Chest" style="width: 80px; height: 80px;">';
+            } else {
+                iconElement.textContent = chest.icon;
+            }
+            
+            document.getElementById('chestConfirmName').textContent = chest.name;
+            
+            const timeText = chest.openTimeHours < 0.01 ? '5 seconds' : `${chest.openTimeHours} hour(s)`;
+            document.getElementById('chestConfirmTimer').textContent = `Opening time: ${timeText}`;
+            
+            document.getElementById('chestConfirmModal').style.display = 'flex';
+            
+            // Set up confirm button
+            document.getElementById('confirmChestOpen').onclick = confirmChestOpen;
+        };
+
+        const closeChestConfirmModal = () => {
+            document.getElementById('chestConfirmModal').style.display = 'none';
+            currentChestToOpen = null;
+        };
+
+        const confirmChestOpen = async () => {
+            if (!currentChestToOpen) return;
+            
+            const result = await request(`/user/${currentUser.id}/chest/${currentChestToOpen.id}/start-opening`, { method: 'POST' });
+            if (result.success) {
+                const timeText = currentChestToOpen.openTimeHours < 0.01 ? '5 seconds' : `${currentChestToOpen.openTimeHours} hour(s)`;
+                showNotification(`Started opening ${currentChestToOpen.name}. Come back in ${timeText}!`, 'info');
+                loadChests();
+            }
+            
+            closeChestConfirmModal();
+        };
+
+        const spawnTestChest = async (type) => {
+            const result = await request(`/user/${currentUser.id}/spawn-test-chest/${type}`, { method: 'POST' });
+            if (result.success) {
+                currentUser = result.user;
+                updateUI();
+                showNotification(`Spawned ${result.chest.name}!`, 'success');
+                loadChests();
             }
         };
         
@@ -2711,7 +3815,14 @@
             const result = await request(`/user/${currentUser.id}/tasks/claim`, { method: 'POST' });
             currentUser = result.user || result;
             updateUI();
-            showNotification('Daily task rewards claimed! You got a chest!', 'success');
+            
+            // Show specific chest type if available
+            if (result.rewardChest) {
+                const chestName = result.rewardChest.tier === 'SILVER_TEST' ? 'Silver Chest' : 'Gold Chest';
+                showNotification(`Daily task rewards claimed! You got a ${chestName}!`, 'success');
+            } else {
+                showNotification('Daily task rewards claimed! You got a Chest!', 'success');
+            }
             showScreen('home');
         };
         
@@ -2744,6 +3855,54 @@
         setInterval(() => {
             if (currentUser && document.getElementById('summoning').classList.contains('active')) {
                 updateBossGrid();
+            }
+        }, 1000);
+
+        // Update chest timers every second
+        const updateChestTimers = () => {
+            if (!currentUser || !currentUser.chests) return;
+            
+            const now = Date.now();
+            currentUser.chests.forEach((chest, index) => {
+                const chestTimer = document.querySelector(`[data-chest-id="${chest.id}"] .chest-timer`);
+                if (!chestTimer) return;
+                
+                let timerText = '';
+                if (chest.openTimeHours === 0) {
+                    timerText = 'Ready to open!';
+                } else if (chest.isOpening) {
+                    const remainingTime = (chest.openTimeHours * 60 * 60 * 1000) - (now - chest.startedOpening);
+                    if (remainingTime <= 0) {
+                        timerText = 'Ready to open!';
+                        // Update button text too
+                        const button = document.querySelector(`[data-chest-id="${chest.id}"] button`);
+                        if (button) {
+                            button.textContent = 'Open';
+                            button.disabled = false;
+                        }
+                    } else {
+                        const hours = Math.floor(remainingTime / (60 * 60 * 1000));
+                        const minutes = Math.floor((remainingTime % (60 * 60 * 1000)) / (60 * 1000));
+                        const seconds = Math.floor((remainingTime % (60 * 1000)) / 1000);
+                        if (hours > 0) {
+                            timerText = `${hours}h ${minutes}m ${seconds}s remaining`;
+                        } else if (minutes > 0) {
+                            timerText = `${minutes}m ${seconds}s remaining`;
+                        } else {
+                            timerText = `${seconds}s remaining`;
+                        }
+                    }
+                } else {
+                    timerText = `${chest.openTimeHours}h to open`;
+                }
+                
+                chestTimer.textContent = timerText;
+            });
+        };
+
+        setInterval(() => {
+            if (currentUser && document.getElementById('chests').classList.contains('active')) {
+                updateChestTimers();
             }
         }, 1000);
     </script>

@@ -12,20 +12,228 @@ app.use(express.static('.'));
 const users = {};
 const combatSessions = {};
 
+// Item pool - only using actual images provided
+const itemPool = {
+  weapons: [
+    // E-Tier (Basic)
+    { name: 'Dawnbreaker Blade', rarity: 'E', stats: { str: 2 }, description: 'A simple but effective blade forged at first light', icon: 'itempngs/itempngs/basicsword.png' },
+    { name: 'Earthshaker Cleaver', rarity: 'E', stats: { str: 3 }, description: 'A sturdy bronze blade that trembles the ground', icon: 'itempngs/itempngs/bronzesword.png' },
+    { name: 'Shadowstrike Dagger', rarity: 'E', stats: { str: 2, agi: 1 }, description: 'A swift blade for quick strikes', icon: 'itempngs/itempngs/daggar.png' },
+    
+    // D-Tier (Common)
+    { name: 'Frostwind Saber', rarity: 'D', stats: { str: 4, agi: 1 }, description: 'A magical blue-tinted blade blessed by winter winds', icon: 'itempngs/itempngs/bluesword.png' },
+    { name: 'Rosebane Rapier', rarity: 'D', stats: { str: 5, per: 1 }, description: 'A mystical pink-hued blade that cuts through illusions', icon: 'itempngs/itempngs/pinksword.png' },
+    { name: 'Soulreaper Scythe', rarity: 'D', stats: { str: 5, int: 1 }, description: 'A curved blade that harvests more than grain', icon: 'itempngs/itempngs/bluescythe.png' },
+    { name: 'Twin Fang Blades', rarity: 'D', stats: { str: 4, agi: 2 }, description: 'Dual wielded blades that strike as one', icon: 'itempngs/itempngs/dualies.png' },
+    
+    // C-Tier (Uncommon)
+    { name: 'Thornspike Greatsword', rarity: 'C', stats: { str: 6, vit: 2 }, description: 'An emerald-colored blade wreathed in nature\'s fury', icon: 'itempngs/itempngs/greensword.png' },
+    { name: 'Tidebreaker Cutlass', rarity: 'C', stats: { str: 7, int: 2 }, description: 'A water-blessed blade that flows like the ocean', icon: 'itempngs/itempngs/watersword.png' },
+    { name: 'Arcane Spellblade', rarity: 'C', stats: { str: 6, int: 3 }, description: 'A sword infused with magical energies', icon: 'itempngs/itempngs/spellsword.png' },
+    { name: 'Colossus Cleaver', rarity: 'C', stats: { str: 8, vit: 1 }, description: 'A massive blade that splits mountains', icon: 'itempngs/itempngs/greatsword.png' },
+    
+    // B-Tier (Rare)
+    { name: 'Inferno\'s Wrath', rarity: 'B', stats: { str: 8, int: 3 }, description: 'An eternally burning blade forged in dragon fire', icon: 'itempngs/itempngs/firesword.png' },
+    { name: 'Molten Core Blade', rarity: 'B', stats: { str: 9, vit: 2 }, description: 'A sword forged in the heart of a volcano', icon: 'itempngs/itempngs/lavasword.png' },
+    { name: 'Phantom Edge', rarity: 'B', stats: { str: 8, agi: 3 }, description: 'A ghostly blade that phases through armor', icon: 'itempngs/itempngs/ghostsword.png' },
+    { name: 'Astral Spirit Sword', rarity: 'B', stats: { str: 7, int: 4 }, description: 'A blade blessed by celestial spirits', icon: 'itempngs/itempngs/spiritsword.png' },
+    
+    // A-Tier (Epic)
+    { name: 'Starfall Excalibur', rarity: 'A', stats: { str: 12, agi: 4 }, description: 'A crystal-clear diamond edge that fell from the heavens', icon: 'itempngs/itempngs/diamond sword.png' },
+    { name: 'Diamond Emperor Blade', rarity: 'A', stats: { str: 13, vit: 3 }, description: 'The ultimate crystalline weapon of royalty', icon: 'itempngs/itempngs/diamondsword.png' },
+    { name: 'Dragonflame Greatsword', rarity: 'A', stats: { str: 14, int: 4 }, description: 'A colossal blade wreathed in dragon fire', icon: 'itempngs/itempngs/Flaming Greatsword in Pixel Art.png' },
+    { name: 'Archmage\'s Scepter', rarity: 'A', stats: { str: 8, int: 8, per: 2 }, description: 'A mystical staff of immense magical power', icon: 'itempngs/itempngs/Mystical Pixelated Staff.png' },
+    
+    // S-Tier (Legendary)
+    { name: 'Demon King\'s Dagger', rarity: 'S', stats: { str: 16, agi: 8, int: 6 }, description: 'The cursed blade of the fallen Demon King, whispers dark secrets', icon: 'itempngs/itempngs/demonkingdagger.png' },
+    { name: 'Godslayer\'s Edge', rarity: 'S', stats: { str: 18, agi: 10, vit: 6, int: 4 }, description: 'The ultimate blade capable of slaying gods themselves', icon: 'itempngs/itempngs/stiersowrd.png' }
+  ],
+  accessories: [
+    // RINGS
+    // E-Tier (Basic)
+    { name: 'Wanderer\'s Band', rarity: 'E', stats: { str: 1 }, description: 'A simple ring worn by travelers', icon: 'itempngs/itempngs/rings/normal ring.png', type: 'ring' },
+    { name: 'Cursed Skull Ring', rarity: 'E', stats: { int: 1, per: 1 }, description: 'A ring that brings misfortune to enemies', icon: 'itempngs/itempngs/rings/badone.png', type: 'ring' },
+    
+    // D-Tier (Common)
+    { name: 'Amethyst Dream Ring', rarity: 'D', stats: { int: 2, per: 1 }, description: 'A purple gem that enhances magical focus', icon: 'itempngs/itempngs/rings/amethyst.png', type: 'ring' },
+    { name: 'Ruby Bloodstone', rarity: 'D', stats: { str: 2, vit: 1 }, description: 'A crimson ring forged in gold and blood', icon: 'itempngs/itempngs/rings/rubygold.png', type: 'ring' },
+    
+    // C-Tier (Uncommon)
+    { name: 'Diamond Frost Ring', rarity: 'C', stats: { agi: 3, vit: 2 }, description: 'A brilliant diamond ring cold to the touch', icon: 'itempngs/itempngs/rings/diamondring.png', type: 'ring' },
+    { name: 'Frostbite Circle', rarity: 'C', stats: { int: 4, agi: 1 }, description: 'An ice-cold ring that freezes the soul', icon: 'itempngs/itempngs/rings/icecold.png', type: 'ring' },
+    
+    // B-Tier (Rare)
+    { name: 'Phoenix Flame Ring', rarity: 'B', stats: { str: 4, int: 3 }, description: 'A ring burning with eternal phoenix fire', icon: 'itempngs/itempngs/rings/fiya.png', type: 'ring' },
+    { name: 'Spectral Ghost Band', rarity: 'B', stats: { agi: 4, per: 3 }, description: 'A ring that phases between dimensions', icon: 'itempngs/itempngs/rings/spectral.png', type: 'ring' },
+    { name: 'Champion\'s Glory Ring', rarity: 'B', stats: { str: 3, vit: 3, agi: 2 }, description: 'A ring worn by legendary champions', icon: 'itempngs/itempngs/rings/kindagoated.png', type: 'ring' },
+    
+    // A-Tier (Epic)
+    { name: 'Diamond Emperor\'s Seal', rarity: 'A', stats: { str: 5, vit: 4, int: 3 }, description: 'The imperial seal of the diamond throne', icon: 'itempngs/itempngs/rings/diamondone.png', type: 'ring' },
+    { name: 'Necromancer\'s Death Ring', rarity: 'A', stats: { int: 6, per: 4, vit: 2 }, description: 'A ring that commands the undead legions', icon: 'itempngs/itempngs/rings/necron.png', type: 'ring' },
+    { name: 'Lich King\'s Phylactery', rarity: 'A', stats: { int: 7, str: 3, agi: 3 }, description: 'The soul vessel of an ancient lich lord', icon: 'itempngs/itempngs/rings/necronnnn.png', type: 'ring' },
+    
+    // S-Tier (Legendary)
+    { name: 'Demon King\'s Signet', rarity: 'S', stats: { str: 8, agi: 6, int: 6, vit: 5 }, description: 'The royal seal of the fallen Demon King', icon: 'itempngs/itempngs/rings/demon kingsdagger.png', type: 'ring' },
+    { name: 'Infinity\'s End', rarity: 'S', stats: { str: 10, agi: 10, vit: 10, int: 10, per: 10 }, description: 'The ultimate ring that transcends all reality', icon: 'itempngs/itempngs/rings/finalring.png', type: 'ring' },
+    
+    // NECKLACES
+    // E-Tier (Basic)
+    { name: 'Simple String Pendant', rarity: 'E', stats: { int: 1 }, description: 'A basic necklace made of string and stone', icon: 'itempngs/necklace/neck1.png', type: 'necklace' },
+    { name: 'Wooden Charm Necklace', rarity: 'E', stats: { per: 1 }, description: 'A wooden charm on a leather cord', icon: 'itempngs/necklace/neck2.png', type: 'necklace' },
+    
+    // D-Tier (Common)
+    { name: 'Silver Moon Pendant', rarity: 'D', stats: { int: 2, per: 1 }, description: 'A silver crescent moon pendant', icon: 'itempngs/necklace/neck3.png', type: 'necklace' },
+    { name: 'Crystal Shard Necklace', rarity: 'D', stats: { int: 3 }, description: 'A necklace with a glowing crystal shard', icon: 'itempngs/necklace/neck4.png', type: 'necklace' },
+    { name: 'Golden Chain of Wisdom', rarity: 'D', stats: { int: 2, vit: 1 }, description: 'An elegant golden chain that enhances wisdom', icon: 'itempngs/necklace/neck5.png', type: 'necklace' },
+    
+    // C-Tier (Uncommon)
+    { name: 'Mystic Pearl Necklace', rarity: 'C', stats: { int: 4, per: 2 }, description: 'A string of mystical pearls', icon: 'itempngs/necklace/neck6.png', type: 'necklace' },
+    { name: 'Enchanted Ruby Pendant', rarity: 'C', stats: { str: 3, int: 3 }, description: 'A ruby pendant pulsing with power', icon: 'itempngs/necklace/neck7.png', type: 'necklace' },
+    { name: 'Storm Caller\'s Amulet', rarity: 'C', stats: { int: 5, agi: 1 }, description: 'An amulet that crackles with lightning', icon: 'itempngs/necklace/neck8.png', type: 'necklace' },
+    
+    // B-Tier (Rare)
+    { name: 'Phoenix Feather Charm', rarity: 'B', stats: { int: 6, vit: 3 }, description: 'A charm containing an eternal phoenix feather', icon: 'itempngs/necklace/neck9.png', type: 'necklace' },
+    { name: 'Archmage\'s Focus Crystal', rarity: 'B', stats: { int: 8, per: 3 }, description: 'A crystal that amplifies magical power', icon: 'itempngs/necklace/neck10.png', type: 'necklace' },
+    
+    // A-Tier (Epic)
+    { name: 'Dragon\'s Eye Medallion', rarity: 'A', stats: { int: 10, str: 4, per: 3 }, description: 'A medallion containing a dragon\'s crystallized eye', icon: 'itempngs/necklace/neck11.png', type: 'necklace' },
+    { name: 'Celestial Star Pendant', rarity: 'A', stats: { int: 12, per: 5, vit: 2 }, description: 'A pendant forged from fallen stars', icon: 'itempngs/necklace/neck12.png', type: 'necklace' },
+    
+    // S-Tier (Legendary)
+    { name: 'Void Emperor\'s Soul Chain', rarity: 'S', stats: { int: 15, str: 6, agi: 6, per: 8 }, description: 'The chain that binds the Void Emperor\'s soul', icon: 'itempngs/necklace/neck13.png', type: 'necklace' },
+    { name: 'Infinity\'s Wisdom Pendant', rarity: 'S', stats: { int: 18, per: 10, vit: 8, agi: 5 }, description: 'The ultimate pendant of infinite knowledge', icon: 'itempngs/necklace/neck14.png', type: 'necklace' }
+  ],
+  armor: [
+    // E-Tier (Basic)
+    { name: 'Novice War Helm', rarity: 'E', stats: { vit: 2 }, description: 'A basic helmet for new warriors', icon: 'itempngs/itempngs/helmets/helmet1.png' },
+    { name: 'Verdant Sovereign Circlet', rarity: 'E', stats: { vit: 2, str: 1 }, description: 'A crown forged from emerald crystals', icon: 'itempngs/itempngs/helmets/helmet2.png' },
+    { name: 'Emerald Battle Mask', rarity: 'E', stats: { vit: 3 }, description: 'A mask carved from pure emerald', icon: 'itempngs/itempngs/helmets/helmet3.png' },
+    
+    // D-Tier (Common)
+    { name: 'Knight\'s Honor Helm', rarity: 'D', stats: { vit: 4, agi: 1 }, description: 'A helmet worn by honorable knights', icon: 'itempngs/itempngs/helmets/helmet7.png' },
+    
+    // C-Tier (Uncommon)
+    { name: 'Mystic Battle Crown', rarity: 'C', stats: { vit: 5, int: 2 }, description: 'A helmet infused with magical protection', icon: 'itempngs/itempngs/helmets/helmet8.png' },
+    { name: 'Templar\'s Sacred Helm', rarity: 'C', stats: { vit: 6, str: 2 }, description: 'Blessed headgear of holy warriors', icon: 'itempngs/itempngs/helmets/helmet9.png' },
+    { name: 'Shadow Walker Mask', rarity: 'C', stats: { vit: 5, agi: 2, per: 1 }, description: 'A helm that conceals the wearer in shadows', icon: 'itempngs/itempngs/helmets/helmet10.png' },
+    
+    // B-Tier (Rare)
+    { name: 'Dragonscale War Crown', rarity: 'B', stats: { vit: 7, str: 3, int: 1 }, description: 'Forged from ancient dragon scales', icon: 'itempngs/itempngs/helmets/helmet11.png' },
+    { name: 'Paladin\'s Divine Helm', rarity: 'B', stats: { vit: 8, str: 2, per: 2 }, description: 'A helmet blessed by divine light', icon: 'itempngs/itempngs/helmets/helmet14.png' },
+    { name: 'Arcane Battlecrown', rarity: 'B', stats: { vit: 6, int: 4, agi: 1 }, description: 'A crown that amplifies magical power', icon: 'itempngs/itempngs/helmets/helmet15.png' },
+    
+    // A-Tier (Epic)
+    
+    // S-Tier (Legendary)
+    { name: 'Crown of the Void King', rarity: 'S', stats: { vit: 12, str: 6, int: 6, agi: 4 }, description: 'The ultimate helm that commands the void itself', icon: 'itempngs/itempngs/helmets/helmet12.png' },
+    { name: 'Infinity\'s Aegis Helm', rarity: 'S', stats: { vit: 15, str: 5, int: 5, agi: 5, per: 5 }, description: 'A helmet that transcends mortal comprehension', icon: 'itempngs/itempngs/helmets/helmet13.png' },
+    
+    // CHESTPLATES
+    // E-Tier (Basic)
+    { name: 'Cobblestone Guardian Vest', rarity: 'E', stats: { vit: 4 }, description: 'Basic protection made from rough cobblestone', icon: 'itempngs/chestplatepngs/cobblechest.png' },
+    { name: 'Leather Wanderer\'s Jerkin', rarity: 'E', stats: { vit: 3, agi: 1 }, description: 'Simple leather armor for travelers', icon: 'itempngs/chestplatepngs/leatherchest.png' },
+    
+    // D-Tier (Common)
+    { name: 'Bronze Battleplate', rarity: 'D', stats: { vit: 5, str: 2 }, description: 'Sturdy bronze armor for warriors', icon: 'itempngs/chestplatepngs/bronzechest.png' },
+    { name: 'Phantom Wraith Chestguard', rarity: 'D', stats: { vit: 4, agi: 2, per: 1 }, description: 'A ghostly chestplate that whispers secrets', icon: 'itempngs/chestplatepngs/spookychest.png' },
+    
+    // C-Tier (Uncommon)
+    { name: 'Mystic Enchanted Cuirass', rarity: 'C', stats: { vit: 5, int: 4, per: 1 }, description: 'A chestplate humming with magical energy', icon: 'itempngs/chestplatepngs/enchantedchest.png' },
+    { name: 'Umbral Shadow Plate', rarity: 'C', stats: { vit: 6, agi: 3 }, description: 'Dark armor that bends shadows to its will', icon: 'itempngs/chestplatepngs/shadowchest.png' },
+    { name: 'Void Walker\'s Cuirass', rarity: 'C', stats: { vit: 5, int: 2, per: 2 }, description: 'Strange armor from unknown dimensions', icon: 'itempngs/chestplatepngs/strangechest.png' },
+    
+    // B-Tier (Rare)
+    { name: 'Molten Lava Forge Armor', rarity: 'B', stats: { vit: 8, str: 4, int: 2 }, description: 'Forged in the heart of volcanic fury', icon: 'itempngs/chestplatepngs/lavachest.png' },
+    { name: 'Diamond Sovereign Breastplate', rarity: 'B', stats: { vit: 9, str: 3, agi: 2 }, description: 'Crystalline armor of unmatched brilliance', icon: 'itempngs/chestplatepngs/diamondchest.png' },
+    { name: 'Celestial Divine Aegis', rarity: 'B', stats: { vit: 8, int: 5, per: 3 }, description: 'Blessed armor touched by divine light', icon: 'itempngs/chestplatepngs/divinechest.png' },
+    
+    // A-Tier (Epic)
+    { name: 'Royal Throne Guard Plate', rarity: 'A', stats: { vit: 10, str: 5, int: 3, per: 2 }, description: 'The ceremonial armor of royal protectors', icon: 'itempngs/chestplatepngs/royal chest.png' },
+    { name: 'Sovereign\'s Majesty Cuirass', rarity: 'A', stats: { vit: 11, str: 4, agi: 3, int: 2 }, description: 'The ultimate expression of royal power', icon: 'itempngs/chestplatepngs/royaltychest.png' },
+    { name: 'Akuma Demon Slayer Plate', rarity: 'A', stats: { vit: 12, str: 6, agi: 2 }, description: 'Armor forged to hunt the most dangerous demons', icon: 'itempngs/chestplatepngs/akumachest.png' },
+    
+    // S-Tier (Legendary)
+    { name: 'Demon King\'s Infernal Aegis', rarity: 'S', stats: { vit: 18, str: 8, int: 6, agi: 4 }, description: 'The cursed armor of the fallen Demon King', icon: 'itempngs/chestplatepngs/demonkingchest.png' },
+    { name: 'Shadow Monarch\'s Eternal Plate', rarity: 'S', stats: { vit: 20, str: 6, agi: 8, int: 6, per: 5 }, description: 'The ultimate armor that commands all shadows', icon: 'itempngs/chestplatepngs/shadowmonarchchest.png' },
+    
+    // LEGGINGS
+    // E-Tier (Basic)
+    { name: 'Traveler\'s Cloth Pants', rarity: 'E', stats: { vit: 2 }, description: 'Basic cloth leggings for wanderers', icon: 'itempngs/leggings/normallegs.png' },
+    { name: 'Simple Leather Leggings', rarity: 'E', stats: { vit: 2, agi: 1 }, description: 'Standard leather protection', icon: 'itempngs/leggings/normalleg.png' },
+    { name: 'Cobblestone Greaves', rarity: 'E', stats: { vit: 3 }, description: 'Heavy stone leggings for basic defense', icon: 'itempngs/leggings/cobblelegs.png' },
+    
+    // D-Tier (Common)
+    { name: 'Bronze Warrior Leggings', rarity: 'D', stats: { vit: 4, str: 1 }, description: 'Sturdy bronze leg armor', icon: 'itempngs/leggings/bronzelegs.png' },
+    { name: 'Iron Defender Greaves', rarity: 'D', stats: { vit: 4, str: 1 }, description: 'Solid iron leg protection', icon: 'itempngs/leggings/ironlegs.png' },
+    { name: 'Shadow Ninja Pants', rarity: 'D', stats: { vit: 3, agi: 3 }, description: 'Silent leggings for stealthy warriors', icon: 'itempngs/leggings/ninjalegs.png' },
+    
+    // C-Tier (Uncommon)
+    { name: 'Golden Emperor Greaves', rarity: 'C', stats: { vit: 5, str: 2, int: 1 }, description: 'Ornate golden leg armor of royalty', icon: 'itempngs/leggings/goldlegs.png' },
+    { name: 'Spiked Battle Leggings', rarity: 'C', stats: { vit: 6, str: 3 }, description: 'Aggressive leggings covered in spikes', icon: 'itempngs/leggings/spikelegs.png' },
+    { name: 'Mystic Void Pants', rarity: 'C', stats: { vit: 5, int: 3, per: 1 }, description: 'Strange leggings from another dimension', icon: 'itempngs/leggings/wierdlegs.png' },
+    
+    // B-Tier (Rare)
+    { name: 'Celestial Divine Greaves', rarity: 'B', stats: { vit: 8, int: 4, per: 2 }, description: 'Holy leggings blessed by the gods', icon: 'itempngs/leggings/divinelegs.png' },
+    
+    // A-Tier (Epic)
+    { name: 'Arcane Scholar Leggings', rarity: 'A', stats: { vit: 10, int: 6, per: 3 }, description: 'Leggings imbued with ancient knowledge', icon: 'itempngs/leggings/interesetinglegs.png' },
+    
+    // S-Tier (Legendary)
+    { name: 'Demon King\'s Hellfire Greaves', rarity: 'S', stats: { vit: 16, str: 8, agi: 6, int: 4 }, description: 'The burning leggings of the fallen Demon King', icon: 'itempngs/leggings/demoniclegs.png' },
+    { name: 'Shadow Monarch\'s Void Leggings', rarity: 'S', stats: { vit: 18, agi: 10, int: 6, per: 4 }, description: 'Leggings that merge with the darkness itself', icon: 'itempngs/leggings/shadowleg.png' }
+  ]
+};
+
 // Data templates
 const createUser = (nickname, preferences = null) => {
-  const starterItems = [
-    { id: uuidv4(), name: 'Iron Sword', category: 'weapons', rarity: 'E', stats: { str: 2, agi: 1 }, description: 'A sturdy iron blade' },
-    { id: uuidv4(), name: 'Leather Helmet', category: 'armor', rarity: 'E', stats: { vit: 2 }, description: 'Basic leather protection' },
-    { id: uuidv4(), name: 'Chain Mail', category: 'armor', rarity: 'E', stats: { vit: 3, str: 1 }, description: 'Interlocked metal rings' },
-    { id: uuidv4(), name: 'Iron Ring', category: 'accessories', rarity: 'E', stats: { str: 1 }, description: 'Simple iron band' },
-    { id: uuidv4(), name: 'Silver Necklace', category: 'accessories', rarity: 'E', stats: { int: 2, per: 1 }, description: 'Elegant silver chain' },
+  // Give all available items plus basic items
+  const starterItems = [];
+  
+  // Add all weapons
+  itemPool.weapons.forEach(weapon => {
+    starterItems.push({
+      id: uuidv4(),
+      name: weapon.name,
+      category: 'weapons',
+      rarity: weapon.rarity,
+      stats: weapon.stats,
+      description: weapon.description,
+      icon: weapon.icon
+    });
+  });
+  
+  // Add all accessories (rings)
+  itemPool.accessories.forEach(accessory => {
+    starterItems.push({
+      id: uuidv4(),
+      name: accessory.name,
+      category: 'accessories',
+      rarity: accessory.rarity,
+      stats: accessory.stats,
+      description: accessory.description,
+      icon: accessory.icon
+    });
+  });
+  
+  // Add all armor (helmets)
+  itemPool.armor.forEach(armor => {
+    starterItems.push({
+      id: uuidv4(),
+      name: armor.name,
+      category: 'armor',
+      rarity: armor.rarity,
+      stats: armor.stats,
+      description: armor.description,
+      icon: armor.icon
+    });
+  });
+  
+  // Add basic potions
+  starterItems.push(
     { id: uuidv4(), name: 'Health Potion', category: 'potions', rarity: 'E', stats: {}, description: 'Restores 50 HP', effect: 'heal', value: 50 },
     { id: uuidv4(), name: 'Health Potion', category: 'potions', rarity: 'E', stats: {}, description: 'Restores 50 HP', effect: 'heal', value: 50 },
-    { id: uuidv4(), name: 'Health Potion', category: 'potions', rarity: 'E', stats: {}, description: 'Restores 50 HP', effect: 'heal', value: 50 },
-    { id: uuidv4(), name: 'Strength Elixir', category: 'potions', rarity: 'D', stats: {}, description: 'Temporarily boosts STR by 5', effect: 'buff_str', value: 5, duration: 300000 },
-    { id: uuidv4(), name: 'Agility Tonic', category: 'potions', rarity: 'D', stats: {}, description: 'Temporarily boosts AGI by 5', effect: 'buff_agi', value: 5, duration: 300000 }
-  ];
+    { id: uuidv4(), name: 'Health Potion', category: 'potions', rarity: 'E', stats: {}, description: 'Restores 50 HP', effect: 'heal', value: 50 }
+  );
   
   const defaultPreferences = {
     workoutSplit: 'full-body',
@@ -48,10 +256,13 @@ const createUser = (nickname, preferences = null) => {
   const userPrefs = preferences || defaultPreferences;
   const dailyTasks = generateDailyTasks(userPrefs);
   
+  // The first item in starterItems is the starting sword
+  const startingSword = starterItems[0];
+  
   return {
     id: uuidv4(), nickname, level: 1, xp: 0, hp: 100, maxHp: 100, coins: 1000,
     stats: { str: 20, agi: 20, vit: 20, int: 20, per: 20 }, unspentPoints: 0,
-    inventory: { equipped: { weapon: null, armor: [null,null,null,null], accessories: [null,null,null,null] }, items: starterItems },
+    inventory: { equipped: { weapon: startingSword, armor: [null,null,null], accessories: [null,null,null] }, items: starterItems },
     dailyTasks: { tasks: dailyTasks, completed: [], lastClaimed: 0, lastReset: Date.now() },
     dungeonProgress: { completedToday: [], totalClears: {E:0,D:0,C:0,B:0,A:0,S:0}, lastReset: 0 },
     shopState: { items: [], purchased: [], lastRefresh: 0 }, playlist: [],
@@ -71,50 +282,6 @@ const dungeonTiers = {
   S: { per: 75, xp: 400, coins: 250, mobs: ['Ancient','Void Lord','Death'], boss: 'Shadow Emperor' }
 };
 
-const itemPool = {
-  weapons: [
-    { name: 'Iron Sword', rarity: 'E', stats: { str: 2, agi: 1 }, description: 'A sturdy iron blade' },
-    { name: 'Steel Axe', rarity: 'E', stats: { str: 3, vit: 1 }, description: 'Heavy two-handed axe' },
-    { name: 'Hunter\'s Bow', rarity: 'E', stats: { agi: 3, per: 1 }, description: 'Well-crafted hunting bow' },
-    { name: 'Wizard Staff', rarity: 'D', stats: { int: 4, per: 2 }, description: 'Staff imbued with magic' },
-    { name: 'Shadow Dagger', rarity: 'D', stats: { agi: 3, str: 2 }, description: 'Blade that cuts through shadows' },
-    { name: 'Flaming Sword', rarity: 'C', stats: { str: 5, int: 2 }, description: 'Sword wreathed in eternal flames' },
-    { name: 'Dragon Slayer', rarity: 'B', stats: { str: 8, vit: 3 }, description: 'Legendary weapon of dragon hunters' },
-    { name: 'Excalibur', rarity: 'A', stats: { str: 10, agi: 5, vit: 3 }, description: 'The legendary sword of kings' },
-    { name: 'Void Blade', rarity: 'S', stats: { str: 15, agi: 8, int: 5 }, description: 'Forged from the essence of the void' }
-  ],
-  armor: [
-    { name: 'Leather Helmet', rarity: 'E', stats: { vit: 2 }, description: 'Basic leather protection' },
-    { name: 'Chain Mail', rarity: 'E', stats: { vit: 3, str: 1 }, description: 'Interlocked metal rings' },
-    { name: 'Iron Plate', rarity: 'D', stats: { vit: 4, str: 2 }, description: 'Heavy iron armor' },
-    { name: 'Ranger\'s Cloak', rarity: 'D', stats: { agi: 3, per: 2 }, description: 'Light and stealthy' },
-    { name: 'Mage Robes', rarity: 'C', stats: { int: 5, per: 3 }, description: 'Robes woven with magic' },
-    { name: 'Dragon Scale Armor', rarity: 'B', stats: { vit: 8, str: 4 }, description: 'Armor made from dragon scales' },
-    { name: 'Divine Plate', rarity: 'A', stats: { vit: 10, str: 5, int: 3 }, description: 'Blessed by the gods' },
-    { name: 'Celestial Aegis', rarity: 'S', stats: { vit: 15, str: 8, int: 6 }, description: 'Armor of the heavens' }
-  ],
-  accessories: [
-    { name: 'Iron Ring', rarity: 'E', stats: { str: 1 }, description: 'Simple iron band' },
-    { name: 'Silver Necklace', rarity: 'E', stats: { int: 2, per: 1 }, description: 'Elegant silver chain' },
-    { name: 'Agility Bracelet', rarity: 'D', stats: { agi: 3 }, description: 'Increases movement speed' },
-    { name: 'Wisdom Amulet', rarity: 'D', stats: { int: 3, per: 2 }, description: 'Enhances magical knowledge' },
-    { name: 'Ruby Ring', rarity: 'C', stats: { str: 3, vit: 2 }, description: 'Ring with a brilliant ruby' },
-    { name: 'Phoenix Feather', rarity: 'B', stats: { int: 5, agi: 3 }, description: 'Feather of the legendary phoenix' },
-    { name: 'Crown of Kings', rarity: 'A', stats: { str: 4, int: 4, per: 4, vit: 2 }, description: 'Crown worn by ancient rulers' },
-    { name: 'Eternal Sigil', rarity: 'S', stats: { str: 6, agi: 6, vit: 6, int: 6, per: 6 }, description: 'Symbol of infinite power' }
-  ],
-  potions: [
-    { name: 'Health Potion', rarity: 'E', stats: {}, description: 'Restores 50 HP', effect: 'heal', value: 50 },
-    { name: 'Mana Potion', rarity: 'E', stats: {}, description: 'Restores MP', effect: 'mana', value: 30 },
-    { name: 'Strength Elixir', rarity: 'D', stats: {}, description: 'Temporarily boosts STR by 5', effect: 'buff_str', value: 5, duration: 300000 },
-    { name: 'Agility Tonic', rarity: 'D', stats: {}, description: 'Temporarily boosts AGI by 5', effect: 'buff_agi', value: 5, duration: 300000 },
-    { name: 'Vitality Brew', rarity: 'C', stats: {}, description: 'Temporarily boosts VIT by 8', effect: 'buff_vit', value: 8, duration: 600000 },
-    { name: 'Greater Health Potion', rarity: 'C', stats: {}, description: 'Restores 100 HP', effect: 'heal', value: 100 },
-    { name: 'Elixir of Power', rarity: 'B', stats: {}, description: 'Boosts all stats by 5', effect: 'buff_all', value: 5, duration: 900000 },
-    { name: 'Divine Essence', rarity: 'A', stats: {}, description: 'Boosts all stats by 10', effect: 'buff_all', value: 10, duration: 1200000 },
-    { name: 'Immortal Elixir', rarity: 'S', stats: {}, description: 'Boosts all stats by 15', effect: 'buff_all', value: 15, duration: 1800000 }
-  ]
-};
 
 const workoutPrompts = ['10 Push-ups','15 Squats','20 Jumping Jacks','30 Second Plank','5 Burpees','25 Crunches','15 Lunges','10 Burpees'];
 
@@ -265,7 +432,9 @@ const chestTypes = {
   C: { name: 'Silver Chest', openTime: 4, icon: '💼', color: '#C0C0C0' },
   B: { name: 'Golden Chest', openTime: 8, icon: '🎁', color: '#FFD700' },
   A: { name: 'Platinum Chest', openTime: 12, icon: '💎', color: '#E5E4E2' },
-  S: { name: 'Legendary Chest', openTime: 24, icon: '🏆', color: '#FF6347' }
+  S: { name: 'Legendary Chest', openTime: 24, icon: '🏆', color: '#FF6347' },
+  SILVER_TEST: { name: 'Silver Chest', openTime: 0.00139, icon: '🗄️', color: '#C0C0C0' }, // 5 seconds
+  GOLD_TEST: { name: 'Gold Chest', openTime: 0.00139, icon: '🗄️', color: '#FFD700' } // 5 seconds
 };
 
 const generateChest = (tier, source = 'dungeon') => {
@@ -287,14 +456,29 @@ const generateChest = (tier, source = 'dungeon') => {
 
 const generateChestContents = (tier) => {
   const contents = { coins: 0, xp: 0, items: [] };
-  const tierLevel = tier.charCodeAt(0) - 69; // E=0, D=1, etc.
   
-  // Base rewards scale with tier
-  contents.coins = Math.floor((50 + tierLevel * 30) * (0.8 + Math.random() * 0.4));
-  contents.xp = Math.floor((25 + tierLevel * 15) * (0.8 + Math.random() * 0.4));
+  // Test chests don't give XP/coins, only items
+  if (tier === 'SILVER_TEST' || tier === 'GOLD_TEST') {
+    contents.coins = 0;
+    contents.xp = 0;
+  } else {
+    const tierLevel = tier.charCodeAt(0) - 69; // E=0, D=1, etc.
+    // Base rewards scale with tier
+    contents.coins = Math.floor((50 + tierLevel * 30) * (0.8 + Math.random() * 0.4));
+    contents.xp = Math.floor((25 + tierLevel * 15) * (0.8 + Math.random() * 0.4));
+  }
   
   // Item drops - higher tiers have more items
-  const numItems = Math.min(3, Math.floor(Math.random() * (tierLevel + 2)));
+  let numItems;
+  let tierLevel;
+  
+  if (tier === 'SILVER_TEST' || tier === 'GOLD_TEST') {
+    numItems = Math.floor(Math.random() * 3) + 1; // 1-3 items for test chests
+    tierLevel = tier === 'SILVER_TEST' ? 2 : 3; // Use C/B tier equivalent for item quality
+  } else {
+    tierLevel = tier.charCodeAt(0) - 69; // E=0, D=1, etc.
+    numItems = Math.min(3, Math.floor(Math.random() * (tierLevel + 2)));
+  }
   
   for (let i = 0; i < numItems; i++) {
     const categories = ['weapons', 'armor', 'accessories', 'potions'];
@@ -448,7 +632,7 @@ const getRarityMultiplier = (rarity) => {
 
 const generateShopItems = (user) => {
   user.shopState.items = [];
-  const categories = ['weapons','armor','accessories','potions'];
+  const categories = ['weapons', 'accessories', 'armor'];
   
   categories.forEach(cat => {
     // Higher chance for E/D tier items in shop
@@ -578,13 +762,13 @@ app.post('/api/user/:id/tasks/claim', (req, res) => {
   const user = users[req.params.id];
   const now = Date.now();
   if (user.dailyTasks.completed.length === 5 && now - user.dailyTasks.lastClaimed > 86400000) {
-    user.xp += 100;
-    user.coins += 50;
     user.dailyTasks.lastClaimed = now;
     
-    // Generate a chest for completing daily tasks
-    const dailyChest = generateChest('D', 'Daily Tasks');
-    dailyChest.openTimeHours = 1; // Daily task chests take 1 hour to open
+    // Generate a random chest (silver or gold) for completing daily tasks
+    const chestTiers = ['SILVER_TEST', 'GOLD_TEST'];
+    const randomTier = chestTiers[Math.floor(Math.random() * chestTiers.length)];
+    const dailyChest = generateChest(randomTier, 'Daily Tasks');
+    
     if (!user.chests) user.chests = [];
     user.chests.push(dailyChest);
     
@@ -592,8 +776,12 @@ app.post('/api/user/:id/tasks/claim', (req, res) => {
       user.xp -= user.level * 100;
       user.level++;
     }
+    
+    // Return both user and the chest that was awarded
+    res.json({ user, rewardChest: dailyChest });
+  } else {
+    res.json({ user });
   }
-  res.json(user);
 });
 
 app.post('/api/user/:id/stats/assign', (req, res) => {
@@ -611,6 +799,7 @@ app.post('/api/user/:id/heal', (req, res) => {
   user.hp = user.maxHp;
   res.json(user);
 });
+
 
 app.get('/api/user/:id/dungeons', (req, res) => {
   const user = users[req.params.id];
@@ -926,15 +1115,49 @@ app.post('/api/user/:id/inventory/equip/:itemId', (req, res) => {
       }
     }
     else if (category === 'accessories') {
-      // Find first empty accessory slot
-      const emptySlot = user.inventory.equipped.accessories.findIndex(slot => slot === null);
-      if (emptySlot !== -1) {
-        user.inventory.equipped.accessories[emptySlot] = item;
-      } else {
-        user.inventory.equipped.accessories[0] = item; // Replace first slot if all full
+      // Determine slot based on item type
+      if (item.type === 'ring') {
+        // Rings go in slots 0 or 1 (ring slots)
+        if (user.inventory.equipped.accessories[0] === null) {
+          user.inventory.equipped.accessories[0] = item;
+        } else {
+          user.inventory.equipped.accessories[1] = item;
+        }
+      } else if (item.type === 'necklace') {
+        // Necklaces go in slot 2 (necklace slot)
+        user.inventory.equipped.accessories[2] = item;
       }
     }
   }
+  res.json(user.inventory);
+});
+
+app.post('/api/user/:id/inventory/unequip/:itemId', (req, res) => {
+  const user = users[req.params.id];
+  const itemId = req.params.itemId;
+  const equipped = user.inventory.equipped;
+  
+  // Unequip weapon
+  if (equipped.weapon && equipped.weapon.id === itemId) {
+    equipped.weapon = null;
+  }
+  
+  // Unequip armor
+  for (let i = 0; i < equipped.armor.length; i++) {
+    if (equipped.armor[i] && equipped.armor[i].id === itemId) {
+      equipped.armor[i] = null;
+      break;
+    }
+  }
+  
+  // Unequip accessories
+  for (let i = 0; i < equipped.accessories.length; i++) {
+    if (equipped.accessories[i] && equipped.accessories[i].id === itemId) {
+      equipped.accessories[i] = null;
+      break;
+    }
+  }
+  
   res.json(user.inventory);
 });
 
@@ -1161,5 +1384,6 @@ app.post('/api/user/:id/dungeon/:tier/run-away', (req, res) => {
   
   res.json({ success: true, items, user });
 });
+
 
 app.listen(3000, () => console.log('Solo Ascent running on http://localhost:3000'));
